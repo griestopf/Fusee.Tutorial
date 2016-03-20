@@ -13,6 +13,7 @@
  - Download and run the [FUSEE project] (https://github.com/FUSEEProjectTeam/Fusee) as described in [_Getting Started_] (https://github.com/FUSEEProjectTeam/Fusee/wiki/Getting-Started).
  - Open Fusee.Tutorial01.sln in Visual Studio (e.g. by double-clicking on the file).
  - The solution contains four projects
+ 
    ![Four Projects](_images/SolutionProjects.png)
    - *Core* - contains the main functionality of the application (- the "business logic")
    - *Desktop* - contains an Application for the (Windows) desktop loading and executing the Core functionality.
