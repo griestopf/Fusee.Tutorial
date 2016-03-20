@@ -139,7 +139,7 @@ Understand the concept of "the current Shader".
 
  - Add one more geometry `Mesh` and another pixel shader string (setting a different color).
  
- - Compile another shader using the new pixel shader (and the exisiting vertex shader). Store both shaders (resulting from the two `RC.CreateShader` calls) in fiels rather than in local variables. 
+ - Compile another shader using the new pixel shader (and the exisiting vertex shader). Store both shaders (resulting from the two `RC.CreateShader` calls) in fields rather than in local variables. 
  
  - Within `RenderAFrame` render each of the two meshes with a different shader (call `RC.SetShader` before `RC.Render`).
  
