@@ -36,7 +36,7 @@
 	 ```
    - `RenderAFrame` - Called to generate image contents (once per frame). You can place drawing and interaction code here. Currently, `RenderAFrame` just clears the background of the backbuffer (`RC.Clear`) and copies the backbuffer contents to the front buffer `Present`.
    - `Resize` - Called when the render window is resized (or initialized). We will look at this method later.
-   - Try to change the color of the render window background by altering the first three components of the `float4` value assigned to `RC.ClearColor`. These values are red, green and blue intensities in the range from 0 to 1.
+ - Try to change the color of the render window background by altering the first three components of the `float4` value assigned to `RC.ClearColor`. These values are red, green and blue intensities in the range from 0 to 1.
    
  
 ##The rendering pipeline
@@ -72,18 +72,51 @@ Now let's add a very simple pair of a Vertex- and a Pixel-Shader.
 			gl_FragColor = vec4(1, 0, 1, 1);
 		}";
 	```
-   Note that the program code (containting a `main` method each) is contained in strings. Thus, the C# compiler will not recognize its contents as program code.
+   Note that the program code (containting a `main` method each) is contained in strings. Thus, the C# compiler will not recognize its contents as program code. 
  
- - Add code to the `Init` method to compile the shader code and set it as the currently active shader on the render context (`RC`).
+ - Add code to the `Init` method to compile the shader code for the GPU and set it as the currently active shader on the render context (`RC`).
 	```C#
 	var shader = RC.CreateShader(_vertexShader, _pixelShader);
 	RC.SetShader(shader);
 	```
  
+Note how the pixel shader does nothing but copy the incoming vertex (`fuVertex`) to the resulting vertex `(`gl_Position`) while adding a fourth dimension to it (constantly set to 1.0). The pixel shader fills each pixel it is called for with a constant color (magenta - full red, no green, full blue).
 
+##Add Geometry
+ - At the `Tutorial` class level, create a private `Mesh` field. 
+	```C#
+    private Mesh _mesh;
+	```
 
+ - Inside the `Init` method, initialize the mesh with a a single triangle.
+	```C#
+	_mesh = new Mesh
+	{
+		Vertices = new[]
+		{
+			new float3(-0.75f, -0.75f, 0),
+			new float3(0.75f, -0.75f, 0),
+			new float3(0, 0.75f, 0),
+		},
+		Triangles = new ushort[] {0, 1, 2},
+	};
+	```
 
+ - In the `RenderAFrame` method, draw the mesh _after_ the backbuffer was cleared, but _before_ the backbuffer contents is `Present`ed.
+	```C#
+	RC.Clear(ClearFlags.Color | ClearFlags.Depth);
 
+	RC.Render(_mesh);
 
+	Present();
+	
+	```
+ 
+ - Compile and run the program for your favorite platform. A magenta triangle should fill the green background.
+ 
+    ![Result](_images/Tut01Result.png)
+
+   
+ 
 
  
