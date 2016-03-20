@@ -80,7 +80,7 @@ Now let's add a very simple pair of a Vertex- and a Pixel-Shader.
 	RC.SetShader(shader);
 	```
  
-Note how the pixel shader does nothing but copy the incoming vertex (`fuVertex`) to the resulting vertex `(`gl_Position`) while adding a fourth dimension to it (constantly set to 1.0). The pixel shader fills each pixel it is called for with a constant color (magenta - full red, no green, full blue).
+Note how the pixel shader does nothing but copy the incoming vertex (`fuVertex`) to the resulting vertex (`gl_Position`) while adding a fourth dimension to it (constantly set to 1.0). The pixel shader fills each pixel it is called for (`gl_FragColor`) with a constant color (magenta - full red, no green, full blue).
 
 ##Add Geometry
  - At the `Tutorial` class level, create a private `Mesh` field. 
@@ -137,7 +137,7 @@ Understand how the `Triangles` are indices into the `Vertices` array.
  
 Understand the concept of "the current Shader".
 
- - Add one more geometry mesh and another pixel shader (setting a different color).
+ - Add one more geometry `Mesh` and another pixel shader string (setting a different color).
  
  - Compile another shader using the new pixel shader (and the exisiting vertex shader). Store both shaders (resulting from the two `RC.CreateShader` calls) in fiels rather than in local variables. 
  
