@@ -41,35 +41,46 @@
  
 ##The rendering pipeline
 Before we can draw some geometry, we need a simple understanding how the graphics card works. You can imgine the graphics card (or the GPU) as a pipeline. On the one end, you put in (3D-) Geometry and on the other end a rendered two-dimensional pixel image drops out. The conversion from the vector geometry into pixel images is done in two major steps: 
+
 1. The coordinates of the geometry's vertices are converted into screen coordinates.
 
 2. The vector geometry (in screen coordinates) is "rasterized" - that is, each pixel in the output buffer covered by geometry is filled with a certain color.
 
 You can control both steps by placing small programs on the graphics card's processer (the GPU). These programs are called "Shaders". A program performing the coordinate transformation from whatever source-coordinate system to screen coordinates is called "Vertex Shader". A program performing the color calculation of each pixel to fill is called "Pixel Shader". In FUSEE you need to provide a Pixel and a Vertex Shader if you want to render geometry. The programming language for shaders used in FUSEE is GLSL, the shader language supported by OpenGL.
 
+![Render and Pixel Shaders] (_images/RenderPipelineVP.png)
+
 ##Add Shaders
 Now let's add a very simple pair of a Vertex- and a Pixel-Shader.
-Add two fields to the `Tutorial` class containing strings with the respective Shader code:
-```C#
-private const string _vertexShader = @"
-	attribute vec3 fuVertex;
+ - Add two fields to the `Tutorial` class containing strings with the respective Shader code:
+	```C#
+	private const string _vertexShader = @"
+		 attribute vec3 fuVertex;
 
-	void main()
-	{
-		gl_Position = vec4(fuVertex, 1.0);
-	}";
+		void main()
+		{
+			gl_Position = vec4(fuVertex, 1.0);
+		}";
 
-private const string _pixelShader = @"
-	#ifdef GL_ES
-		precision highp float;
-	#endif
+	private const string _pixelShader = @"
+		#ifdef GL_ES
+			precision highp float;
+		#endif
 
-	void main()
-	{
-		gl_FragColor = vec4(1, 0, 1, 1);
-	}";
-```
-Note that the program code (containting a `main` method each) is contained in strings. Thus, the C# compiler will not recognize its contents as program code.
+		void main()
+		{
+			gl_FragColor = vec4(1, 0, 1, 1);
+		}";
+	```
+   Note that the program code (containting a `main` method each) is contained in strings. Thus, the C# compiler will not recognize its contents as program code.
+ 
+ - Add code to the `Init` method to compile the shader code and set it as the currently active shader on the render context (`RC`).
+	```C#
+	var shader = RC.CreateShader(_vertexShader, _pixelShader);
+	RC.SetShader(shader);
+	```
+ 
+
 
 
 
