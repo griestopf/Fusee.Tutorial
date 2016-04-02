@@ -17,10 +17,10 @@ namespace Fusee.Tutorial.Core
         private Mesh _mesh;
         private const string _vertexShader = @"
             attribute vec3 fuVertex;
+            uniform float alpha;
 
             void main()
             {
-                float alpha = 3.1415;
                 float s = sin(alpha);
                 float c = cos(alpha);
                 gl_Position = vec4( fuVertex.x * c - fuVertex.z * s, 
@@ -39,6 +39,9 @@ namespace Fusee.Tutorial.Core
                 gl_FragColor = vec4(1, 1, 1, 1);
             }";
 
+
+        private IShaderParam _alphaParam;
+        private float _alpha;
 
         // Init is called on startup. 
         public override void Init()
@@ -63,6 +66,8 @@ namespace Fusee.Tutorial.Core
 
             var shader = RC.CreateShader(_vertexShader, _pixelShader);
             RC.SetShader(shader);
+            _alphaParam = RC.GetShaderParam(shader, "alpha");
+            _alpha = 0;
 
             // Set the clear color for the backbuffer
             RC.ClearColor = new float4(0.1f, 0.3f, 0.2f, 1);
@@ -73,6 +78,9 @@ namespace Fusee.Tutorial.Core
         {
             // Clear the backbuffer
             RC.Clear(ClearFlags.Color | ClearFlags.Depth);
+
+            _alpha += 0.01f;
+            RC.SetShaderParam(_alphaParam, _alpha);
 
             RC.Render(_mesh);
 
