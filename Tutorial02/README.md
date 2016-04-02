@@ -46,9 +46,10 @@ Now we would like to rotate the tetrahedron.
 There are two ways to accomplish this:
 
  1 We could change the Mesh's vertex coordinates every frame within `RenderAFrame`.
+
  2 We could transform the Mesh's vertex coordinates every frame from within the vertex shader.
 
- The typical way to perform coordinate transformations is option 2, especially if we are performing linear transformations (a rotation is a linear tranformation). 
+The typical way to perform coordinate transformations is option 2, especially if we are performing linear transformations (a rotation is a linear tranformation). 
 Let's recall some maths to see how an arbitrary 2D vector (x, y) is rotated around an angle alpha:
 ```
 x' = x * cos(alpha) + y * -sin(alpha)
@@ -83,7 +84,7 @@ Building and running should result in the triangle rotated about 45 degrees in c
 
    
 ## Animation
-Notice that we now have a single parameter (`alpha`) controlling the transformation of all vertices within our mesh. This parameter is constantly set in
+Notice that we now have a single parameter (`alpha`) controlling the transformation of all vertices within our mesh. This parameter is set to a constant value in
 the vertex shader. If we could find a way to alter the value of `alpha` from one frame to the other, we could implement a rotation animation. Shader
 languages allow to set individual values from the "outside world" through so called "uniform variables". Let's change `alpha` from a constant local variable
 inside the vertex shader's `main` function to a more "global" uniform variable. Change the first lines of the vertex shader like this:
@@ -98,9 +99,10 @@ inside the vertex shader's `main` function to a more "global" uniform variable. 
 			float s = sin(alpha);
 	...
 ```
-'alpha' now looks like a global variable (outside of `main`). In addition it is decorated with the `uniform` keyword, which marks it being a value that changes
+`alpha` now looks like a global variable (outside of `main`). In addition it is decorated with the `uniform` keyword, which marks it being a value that changes
 rather infrequently (the vertex shader will be called for a lot of vertices while `alpha`'s value doesn't change). This is in contrast to the `fuVertex` variable
-on the line above which contains a different value (the vertex itself) for each time the vertex shader is called.
+on the line above which contains a different value (the vertex itself) for each time the vertex shader is called. Thus, this variable is marked being an `attribute` 
+(and NOT a `uniform`)
 
 Before we can change the value of `alpha` (which - as part of the vertex shader - lives on the GPU) from the application code (which runs on the CPU), we need to 
 akquire an identifier to access our variable. First we need to declare two fields within our `Tutorial` class:
@@ -129,15 +131,82 @@ Then, in the `RenderAFrame` method we can alter the contents of `_alpha` and the
 
 This way, each frame the angle `alpha` will be incremented about 0.01 radians.
 
-Compiling and building will show a somewhat rotating triangle. If you rotate around the y-axis as proposed in the previus paragraph, you will rather see 
+Building and running this will show a somewhat rotating triangle. If you rotate around the y-axis as proposed in the previus paragraph, you will rather see 
 a triangle bouncing back and forth. Remember that you are really seeing the triangular silhouette of a rotating threedimensional tetrahedron. 
 
-##Color
+#Practice
+ - Create a uniform variable in the pixel shader and do some color animation.
 
+##Color
+To get a more threedimensional graps of our geometry we want to add some more color to it. In later tutorials we will look at ways how to implement
+lighting calculations yielding more realism. For now, we just want our pixel shader to perform a simple calculation where the position is
+interpreted as a color. To accomplish this, we need to pass the position information we receive in the vertex shader on to the pixel shader.
+
+This is done through the `varying` variable `modelpos` which we need to declare in both shaders. Since our coorindates vary in the range from
+-1 to 1 and we want to interprete the x, y and z coordinates as intensisites in the color channels r, g and be, we scale the values to the range
+from 0 to 1 (this is done in the pixel shader `modelpos*0.5 + 0.5`).
+
+```C#
+	private const string _vertexShader = @"
+		attribute vec3 fuVertex;
+		uniform float alpha;
+		varying vec3 modelpos;
+
+		void main()
+		{
+			modelpos = fuVertex;
+			float s = sin(alpha);
+			float c = cos(alpha);
+			gl_Position = vec4( fuVertex.x * c - fuVertex.z * s, 
+								fuVertex.y, 
+								fuVertex.x * s + fuVertex.z * c, 
+								1.0);
+		}";
+
+	private const string _pixelShader = @"
+		#ifdef GL_ES
+			precision highp float;
+		#endif
+		varying vec3 modelpos;
+
+		void main()
+		{
+			gl_FragColor = vec4(modelpos*0.5 + 0.5, 1);
+		}";
+```
+
+Build and run these changes will show the tetrahedron's vertices each with a different color. But not only that: every place on the triangle has
+a different color - the triangles' colors fade between the colors at their vertices. 
+
+![Tetrahedron color] (_images/TetrahedronColor.png)
+
+How is this? - in our geometry we have defined only four vertices with four different positions. If we interpret positions as colors, shouldn't
+we see only four different colors?
+
+The answer is how the value we write into `modelpos` in the vertex shader arrives when we read the value from the pixel shader. Remember that 
+the vertex shader is called for every vertex in our geometry. So it's called only four times. The pixel shader is called for every pixel that 
+is covered by geometry. Depending on your screen resolution and the size of your window this might be several thousands to millon times. 
+
+So there is no 1:1 relation of calls to the vertex shader and the pixel shader. Values that get passed from vertex to pixel shader are thus 
+interpolated by the rendering pipeline. The interpolation for a `varying` value for an individual pixel when calling the pixel shader for that pixel
+is based on the values that were set to that `varying` value at the three vertices with respect to the distance of the pixel in question to 
+the vertices of the triangle it belongs to. So a pixel very close to a certain vertex gets a value very close to the value at that vertex.
+A pixel very much in the middle of a triangle gets a value that is close to the mean of the value at the three triangle's vertices.
+
+The exact interpolation scheme applied here is based on so called "barycentric coordinates".
+
+#Practice
+ - Try more advanced mappings from x, y, z coordinates to r, g, b colors.
 
 ##Interaction
+Now that we know how to manipulate values in both, pixel and vertex shader, let's try to get interactive and see how we can read input values.
+FUSEE allows easy akquisition of values from the standard input devices like mouse, keyboard and touch. The easiest way to access the 
+`Fusee.Engine.Core.Input` class' static properties, `Mouse`, `Keyboard` and `Touch` is to add the following line to the top of the `Tutorial.cs` source code file:
+```C#
+using static Fusee.Engine.Core.Input;
+```
 
-
+This way you can retrieve input from anywhere in your code (preferably from within `RenderAFrame`). As an example, 
 
 ##Practice
  - Create a more complex geometry (e.g. a little house)
