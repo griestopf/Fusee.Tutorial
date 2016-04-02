@@ -30,7 +30,7 @@ namespace Fusee.Tutorial.Core
 
             void main()
             {
-                gl_FragColor = vec4(1, 0, 1, 1);
+                gl_FragColor = vec4(1, 1, 1, 1);
             }";
 
 
@@ -51,8 +51,8 @@ namespace Fusee.Tutorial.Core
             var shader = RC.CreateShader(_vertexShader, _pixelShader);
             RC.SetShader(shader);
 
-            // Set the clear color for the backbuffer to light green.
-            RC.ClearColor = new float4(0.5f, 1, 0.7f, 1);
+            // Set the clear color for the backbuffer.
+            RC.ClearColor = new float4(0.1f, 0.3f, 0.2f, 1);
         }
 
         // RenderAFrame is called once a frame

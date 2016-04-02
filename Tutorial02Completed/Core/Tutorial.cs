@@ -20,7 +20,13 @@ namespace Fusee.Tutorial.Core
 
             void main()
             {
-                gl_Position = vec4(fuVertex, 1.0);
+                float alpha = 3.1415;
+                float s = sin(alpha);
+                float c = cos(alpha);
+                gl_Position = vec4( fuVertex.x * c - fuVertex.z * s, 
+                                    fuVertex.y, 
+                                    fuVertex.x * s + fuVertex.z * c, 
+                                    1.0);
             }";
 
         private const string _pixelShader = @"
@@ -30,7 +36,7 @@ namespace Fusee.Tutorial.Core
 
             void main()
             {
-                gl_FragColor = vec4(1, 0, 1, 1);
+                gl_FragColor = vec4(1, 1, 1, 1);
             }";
 
 
@@ -41,18 +47,25 @@ namespace Fusee.Tutorial.Core
             {
                 Vertices = new[]
                 {
-                    new float3(-0.75f, -0.75f, 0),
-                    new float3(0.75f, -0.75f, 0),
-                    new float3(0, 0.75f, 0),
+                    new float3(-0.8165f, -0.3333f, -0.4714f),
+                    new float3(0.8165f, -0.3333f, -0.4714f),
+                    new float3(0, -0.3333f, 0.9428f),
+                    new float3(0, 1, 0),
                 },
-                Triangles = new ushort[] {0, 1, 2},
+                Triangles = new ushort[]
+                {
+                    0, 2, 1,
+                    0, 1, 3,
+                    1, 2, 3,
+                    2, 0, 3,
+                },
             };
 
             var shader = RC.CreateShader(_vertexShader, _pixelShader);
             RC.SetShader(shader);
 
-            // Set the clear color for the backbuffer to light green.
-            RC.ClearColor = new float4(0.5f, 1, 0.7f, 1);
+            // Set the clear color for the backbuffer
+            RC.ClearColor = new float4(0.1f, 0.3f, 0.2f, 1);
         }
 
         // RenderAFrame is called once a frame
@@ -63,7 +76,7 @@ namespace Fusee.Tutorial.Core
 
             RC.Render(_mesh);
 
-            // Swap buffers: Show the contents of the backbuffer (containing the currently rerndered farame) on the front buffer.
+            // Swap buffers: Show the contents of the backbuffer (containing the currently rendered farame) on the front buffer.
             Present();
         }
 
