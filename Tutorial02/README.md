@@ -113,7 +113,7 @@ akquire an identifier to access our variable. First we need to declare two field
 ```
 
 The filed `_alphaParam` will keep an identifier (a handle) to the shader variable `alpha` while the field `_alpha` will keep the actual value of 
-the GPU-varialbe `alpha` in CPU-Land.
+the GPU-variable `alpha` in CPU-Land.
 
 Inside the `Init` method, right after creating the shader from source code, we can initialize both fields:
 ```C#
@@ -134,7 +134,7 @@ This way, each frame the angle `alpha` will be incremented about 0.01 radians.
 Building and running this will show a somewhat rotating triangle. If you rotate around the y-axis as proposed in the previus paragraph, you will rather see 
 a triangle bouncing back and forth. Remember that you are really seeing the triangular silhouette of a rotating threedimensional tetrahedron. 
 
-#Practice
+###Practice
  - Create a uniform variable in the pixel shader and do some color animation.
 
 ##Color
@@ -195,7 +195,7 @@ A pixel very much in the middle of a triangle gets a value that is close to the 
 
 The exact interpolation scheme applied here is based on so called "barycentric coordinates".
 
-#Practice
+###Practice
  - Try more advanced mappings from x, y, z coordinates to r, g, b colors.
 
 ##Interaction
