@@ -235,12 +235,12 @@ Building and running this will give you interactive control over the rotation an
 ##Exercise
  - Create a more complex geometry (e.g. a little house)
  - Rotate around two axes and/or move along two axes controlled by input devices. You can use two-dimensional uniform variables. 
-   The GLSL (shader language) data type for two-dimensional values is (vec2) [https://www.opengl.org/wiki/Data_Type_(GLSL)]
+   The GLSL (shader language) data type for two-dimensional values is [vec2] (https://www.opengl.org/wiki/Data_Type_(GLSL))
  - Implement actions (like rotating) only working if the left mouse button is pressed (`Mouse.LeftButton`).
  - Try to combine the input from Mouse, Touch and Keyboard. To retrieve speed-like values from the keyboard, use the
    `LeftRightAxis` and `UpDownAxis`, or the `WSAxis` and `ADAxis` properties.
  - Extend your pixel shader to create a highlight on the geometry based on the mouse cursor position: The color should become lighter, the closer the 
    mouse cursor is to the pixel the pixel shader is called for. You will need to pass the mouse position (`uniform`ly) to the pixel shader and
    also need the (`varying`) pixel's position. To measure the distance between two 2D-Points (`vec`) within a shader you can use the 
-   (distance function) [https://www.opengl.org/sdk/docs/man/html/distance.xhtml].   
+   [distance function] (https://www.opengl.org/sdk/docs/man/html/distance.xhtml).   
 
