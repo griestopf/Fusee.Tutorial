@@ -19,7 +19,6 @@
    - *Desktop* - contains an Application for the (Windows) desktop loading and executing the Core functionality.
    - *Web* - contains a build process creating a JavaScript cross-compiled version of the Core functionality and generating an HTML page to load and execute that functionality.
    - *Android* - contains a [Xamarin] (https://xamarin.com/) project creating an Android APK loading and executing the Core functionality.
- 
  - Set the Desktop project as the Startup project. 
  - Right-click on the Desktop project and hit "Build".
  - If the build was successful, run the application.
