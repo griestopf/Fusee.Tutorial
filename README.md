@@ -1,5 +1,5 @@
 # Fusee.Tutorial
-Step-by-step tutorial to get familiar with FUSEE
+Step-by-step tutorial to get familiar with [FUSEE] (http://www.fusee3d.org)
 
 ##Contents
 
