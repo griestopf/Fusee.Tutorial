@@ -116,7 +116,7 @@ Note how the pixel shader does nothing but copy the incoming vertex (`fuVertex`)
  
     ![Result](_images/Tut01Result.png)
 
-##Questions/Practice
+##Exercise/Questions
 Investigate how the vertice's coordinates relate to pixel positions within the output window.
  
  - What are the smallest and largest x- and y-values for vertices that can be displayed within the output window?

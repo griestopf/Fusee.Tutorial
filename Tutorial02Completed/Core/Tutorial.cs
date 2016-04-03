@@ -1,12 +1,7 @@
-﻿using System;
-using Fusee.Base.Common;
-using Fusee.Base.Core;
-using Fusee.Engine.Common;
+﻿using Fusee.Engine.Common;
 using Fusee.Engine.Core;
-using Fusee.Engine.Core.GUI;
 using Fusee.Math.Core;
-using Fusee.Serialization;
-
+using static Fusee.Engine.Core.Input;
 
 namespace Fusee.Tutorial.Core
 {
@@ -82,7 +77,8 @@ namespace Fusee.Tutorial.Core
             // Clear the backbuffer
             RC.Clear(ClearFlags.Color | ClearFlags.Depth);
 
-            _alpha += 0.01f;
+            float2 speed = Mouse.Velocity;
+            _alpha += speed.x * 0.0001f;
             RC.SetShaderParam(_alphaParam, _alpha);
 
             RC.Render(_mesh);

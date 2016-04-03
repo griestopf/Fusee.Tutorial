@@ -1,8 +1,8 @@
 #Tutorial 02
 
 ##Goals
- - Understand how Geometry is pumped through the rendering pipeline.
- - Understand uniform shader variables.
+ - Understand how geometry is pumped through the rendering pipeline.
+ - Understand `uniform`, `attribute` and `varying` shader variables.
  - Understand how data is passed from pixel to vertex shader.
  - Grasp basics of 3D transformations.
 
@@ -13,7 +13,7 @@
  - Make sure you got [Tutorial01] (../Tutorial01) up and running.
  
 ##Passing more information through the pipeline
-First, let's add some more triangles to the geometry. Add one more vertex and span four triangles with the four vertices to creatae a Tetrahedron ("a triangular pyramid").
+First, let's add some more triangles to the geometry. Add one more vertex and span four triangles with the four vertices to creatae a Tetrahedron ("a triangular pyramid"). Extend the Mesh instantiation in (Core/Tutorial.cs) [Core/Tutorial.cs] to the following (you may omit the comments):
 ```C#
 	_mesh = new Mesh
 	{
@@ -41,16 +41,12 @@ three triangles are obscured by the one we are seeing. Note that the visible tri
 border of the window. This is because the vertex coordinates used above are chosen to make their common origin (0, 0, 0) to be the tetrahedron's center of gravity. 
 
 ##Rotating it
-Now we would like to rotate the tetrahedron. 
+Now we would like to rotate the tetrahedron. There are two ways to accomplish this:
+ 1. We could change the Mesh's vertex coordinates every frame within `RenderAFrame`.
+ 2. We could transform the Mesh's vertex coordinates every frame from within the vertex shader.
 
-There are two ways to accomplish this:
-
- 1 We could change the Mesh's vertex coordinates every frame within `RenderAFrame`.
-
- 2 We could transform the Mesh's vertex coordinates every frame from within the vertex shader.
-
-The typical way to perform coordinate transformations is option 2, especially if we are performing linear transformations (a rotation is a linear tranformation). 
-Let's recall some maths to see how an arbitrary 2D vector (x, y) is rotated around an angle alpha:
+The typical way to perform coordinate transformations is option 2, especially if we are performing linear transformations (such as a rotation in our case). 
+Let's recall some maths to see how an arbitrary 2D vector (x, y) is rotated around an angle alpha to yield the new coordinates (x', y'):
 ```
 x' = x * cos(alpha) + y * -sin(alpha)
 y' = x * sin(alpha) + y *  cos(alpha)
@@ -99,13 +95,13 @@ inside the vertex shader's `main` function to a more "global" uniform variable. 
 			float s = sin(alpha);
 	...
 ```
-`alpha` now looks like a global variable (outside of `main`). In addition it is decorated with the `uniform` keyword, which marks it being a value that changes
-rather infrequently (the vertex shader will be called for a lot of vertices while `alpha`'s value doesn't change). This is in contrast to the `fuVertex` variable
-on the line above which contains a different value (the vertex itself) for each time the vertex shader is called. Thus, this variable is marked being an `attribute` 
-(and NOT a `uniform`)
+`alpha` now looks like a global variable (outside of `main`). In addition it is decorated with the `uniform` keyword, which marks it being a value 
+that changes rather infrequently (the vertex shader will be called for a lot of vertices while `alpha`'s value doesn't change). This is in contrast
+to the `fuVertex` variable on the line above which contains a different value (the vertex itself) for each time the vertex shader is called. Thus, 
+this variable is marked being an `attribute` (and NOT a `uniform`)
 
-Before we can change the value of `alpha` (which - as part of the vertex shader - lives on the GPU) from the application code (which runs on the CPU), we need to 
-akquire an identifier to access our variable. First we need to declare two fields within our `Tutorial` class:
+Before we can change the value of `alpha` (which - as part of the vertex shader - lives on the GPU) from the application code (which runs on the CPU),
+we need to have an identifier to access our variable. First we need to declare two fields within our `Tutorial` class:
 
 ```C#
 	private IShaderParam _alphaParam;
@@ -131,15 +127,16 @@ Then, in the `RenderAFrame` method we can alter the contents of `_alpha` and the
 
 This way, each frame the angle `alpha` will be incremented about 0.01 radians.
 
-Building and running this will show a somewhat rotating triangle. If you rotate around the y-axis as proposed in the previus paragraph, you will rather see 
-a triangle bouncing back and forth. Remember that you are really seeing the triangular silhouette of a rotating threedimensional tetrahedron. 
+Building and running this will show a somewhat rotating triangle. If you rotate around the y-axis as proposed in the previus paragraph, you will 
+rather recognize a triangle bouncing back and forth. Remember that you are really seeing the triangular silhouette of a rotating 
+threedimensional tetrahedron. 
 
 ###Practice
  - Create a uniform variable in the pixel shader and do some color animation.
 
 ##Color
 To get a more threedimensional graps of our geometry we want to add some more color to it. In later tutorials we will look at ways how to implement
-lighting calculations yielding more realism. For now, we just want our pixel shader to perform a simple calculation where the position is
+lighting calculations producing more realism. For now, we just want our pixel shader to perform a simple calculation where the position is
 interpreted as a color. To accomplish this, we need to pass the position information we receive in the vertex shader on to the pixel shader.
 
 This is done through the `varying` variable `modelpos` which we need to declare in both shaders. Since our coorindates vary in the range from
@@ -180,36 +177,68 @@ a different color - the triangles' colors fade between the colors at their verti
 
 ![Tetrahedron color] (_images/TetrahedronColor.png)
 
-How is this? - in our geometry we have defined only four vertices with four different positions. If we interpret positions as colors, shouldn't
+Why is that? - in our geometry we have defined only four vertices with four different positions. If we interpret positions as colors, shouldn't
 we see only four different colors?
 
-The answer is how the value we write into `modelpos` in the vertex shader arrives when we read the value from the pixel shader. Remember that 
+The answer is how the value we write into `modelpos` in the vertex shader arrives at the pixel shader when we read it back. Remember that 
 the vertex shader is called for every vertex in our geometry. So it's called only four times. The pixel shader is called for every pixel that 
-is covered by geometry. Depending on your screen resolution and the size of your window this might be several thousands to millon times. 
+is covered by geometry. Depending on your screen resolution and the size of your window this might be several thousand to millon times. 
 
 So there is no 1:1 relation of calls to the vertex shader and the pixel shader. Values that get passed from vertex to pixel shader are thus 
 interpolated by the rendering pipeline. The interpolation for a `varying` value for an individual pixel when calling the pixel shader for that pixel
 is based on the values that were set to that `varying` value at the three vertices with respect to the distance of the pixel in question to 
 the vertices of the triangle it belongs to. So a pixel very close to a certain vertex gets a value very close to the value at that vertex.
-A pixel very much in the middle of a triangle gets a value that is close to the mean of the value at the three triangle's vertices.
+A pixel very much in the middle of a triangle gets a value that is close to the mean of the value at the three triangle's vertices. 
+
+In our case: Pixels close to the top of the pyramid are greener because the top vertex value (`float3(0, 1, 0)`) means "green" if interpreted
+as r, g, b triple. Pixels farther from the top get less green, because they are influenced more and more by the other vertices.
 
 The exact interpolation scheme applied here is based on so called "barycentric coordinates".
 
 ###Practice
  - Try more advanced mappings from x, y, z coordinates to r, g, b colors.
+ - Understand that in the pixel shader `modelpos` now keeps the current model-coordinate of the pixel the shader is called for.
+   Imagine ways how you could make use of this information.
 
 ##Interaction
 Now that we know how to manipulate values in both, pixel and vertex shader, let's try to get interactive and see how we can read input values.
 FUSEE allows easy akquisition of values from the standard input devices like mouse, keyboard and touch. The easiest way to access the 
 `Fusee.Engine.Core.Input` class' static properties, `Mouse`, `Keyboard` and `Touch` is to add the following line to the top of the `Tutorial.cs` source code file:
 ```C#
-using static Fusee.Engine.Core.Input;
+    using static Fusee.Engine.Core.Input;
 ```
 
-This way you can retrieve input from anywhere in your code (preferably from within `RenderAFrame`). As an example, 
+This way you can retrieve input from anywhere in your code (preferably from within `RenderAFrame`) by simply typing `Mouse.`, `Keyboard.` or `Touch.`
+and see what IntelliSense/ReSharper offers you.
 
-##Practice
+As an example, we would like to retrieve the current velocity of the mouse (the speed at which the user moves the mouse over our rendering window).
+As the mouse position ist two-dimensional, we will retrieve the mouse speed as a two-dimensional vector with the vector's direction being the
+direction the mouse is heading to and the speed in pixels/second indicated by the magnitude (the length). This value can be retieved in `RenderAFrame`
+by
+```C#
+    float2 speed = Mouse.Velocity;
+```
+As an alternative (or additionally) you can retrieve the speed of the first touch point from a touch device using
+```C#
+    float2 speed = Touch.GetVelocity(TouchPoints.Touchpoint_0);
+```
+Instead of adding a constant value to `_alpha` we can now add an increment based on one of the speed axes. Let's take the x-axis:
+```C#
+    _alpha += speed.x * 0.0001f;
+```
+Note that we multiply `speed.x` with a very small factor. This is because angles are in radians, so one complete revolution is 
+represented by a number slightly bigger than 6 (`2 * PI`), while the speed in pixels/second along the screen's x-axis can get rather 
+big, especially with high resolution displays. 
+
+Building and running this will give you interactive 
+
+##Exercise
  - Create a more complex geometry (e.g. a little house)
- - Create 
-
+ - Rotate around two axes and/or move along two axes controlled by input devices. You can use two-dimensional uniform variables. 
+   The GLSL (shader language) data type for two-dimensional values is (`vec2`) [https://www.opengl.org/wiki/Data_Type_(GLSL)]
+ - Implement actions (like rotating) only working if the left mouse button is pressed (`Mouse.LeftButton`).
+ - Extend your pixel shader to create a highlight on the geometry based on the mouse cursor position: The color should become lighter, the closer the 
+   mouse cursor is to the pixel the pixel shader is called for. You will need to pass the mouse position (`uniform`ly) to the pixel shader and
+   also need the (`varying`) pixel's position. To measure the distance between two 2D-Points (`vec`) within a shader you can use the 
+   (`distance`) function [https://www.opengl.org/sdk/docs/man/html/distance.xhtml].   
 
