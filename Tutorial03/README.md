@@ -23,20 +23,31 @@ coordinate system they are in when they enter the rendering pipeline to a coordi
 
 Without being too exact you could say: The vertex shader transforms each vertex from model coordinates to screen coordinates. It's not quite
 exact because, als you already observed, the vertex shader's output coordinate system ranges from -1 to 1 in both screen dimensions, x and y. 
-"Real" screen coordinates would be individual pixels. So the coordinate system that the vertex shader needs to produce coordinate values for is
-a somewhat "normalized" screen coordinate system where -1 means left (in x direction) or top (in y direction) and +1 means right (for x) or
-bottom (for y). In addition, very often the vertex shader also performs other tasks, like setting up values needed in the lighting calculation,
-(bone) animation, just to name a few.
+"Real" screen coordinates would be 2D-indices to individual pixels. So the coordinate system that the vertex shader needs to produce 
+coordinate values for is a somewhat "normalized" screen coordinate system where -1 means left (in x direction) or top (in y direction) 
+and +1 means right (for x) or bottom (for y). In addition, very often the vertex shader also performs other tasks, like setting up values
+needed in the lighting calculation, (bone) animation, just to name a few.
 
-Once these coordinates are known for all three vertices of a triangle, the render pipeline can figure out which pixels need to be filled with 
-color. Then for each of these pixels the pixel shader (provided by you, the programmer) is called. This process is called rasterization.
+As soon as these "screen" coordinates are known for all three vertices of a triangle, the render pipeline can figure out which pixels need to 
+be filled with color. Then for each of these pixels the pixel shader (provided by you, the programmer) is called. This process is called rasterization.
 
 ![Pixel Shader: Calculate a color for each pixel] (_images/PixelShader.png)
 
-The 
-Once the rendering pipeline knows which of the 
-screen`s pixels are covered by geometry, it can call the pixel shader to do its task and fill any of the pixels covered by geometry with an 
-individually calculated color.
+Once the rendering pipeline knows which of the screen`s pixels are covered by geometry (the dark pixels on the left side of the image above),
+it can call the pixel shader to do its task and fill any of the pixels covered by geometry with an individually calculated color.
+
+###Transformations = Matrices
+So what the vertex shader needs to do is: Perform transformations on incoming coordinates. Typically, the tranformation performed on each 
+vertex is a composition of a long list of individual simple transformations. Consider a car racing game where for a single frame the model 
+of a wheel of the car should be rendered. Each vertex of the wheel model is passed in the wheel's model coordinate system. From there it 
+should be transformed into the coordinate system of the car's body, so at a translation and some rotations must be performed. The whole 
+car is placed somewhere on the game's "World", so another translation and some rotations must be applied. The whole scene is seen from 
+some virtual camera which is positioned and oriented somewhere within in the world, so to yield screen coordinates the inverted camera's
+position and orienation must be applied and at the end the generated image should be perspectively 
+
+
+As we saw in [Tutorial 01] (../Tutorial01), mathematically we can 
+describe transformations as matrices. 
 
 
 ##Exercise
