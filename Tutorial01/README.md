@@ -27,12 +27,14 @@
  - In the Core project, open the source code file "Tutorial.cs". This file contains the application logic (not too much at the moment...).
  - The file contains one class, `Tutorial` consisting of three methods:
    - `Init` - Called on application startup. You can place initizalization code here. Currently, `Init` just sets the clear color
+
      ```C#
      public override void Init()
      {
         RC.ClearColor = new float4(0.5f, 1, 0.7f, 1);
-     }	 
-	 ```
+     }	
+     ```
+
    - `RenderAFrame` - Called to generate image contents (once per frame). You can place drawing and interaction code here. Currently, `RenderAFrame` just clears the background of the backbuffer (`RC.Clear`) and copies the backbuffer contents to the front buffer `Present`.
    - `Resize` - Called when the render window is resized (or initialized). We will look at this method later.
  - Try to change the color of the render window background by altering the first three components of the `float4` value assigned to `RC.ClearColor`. These values are red, green and blue intensities in the range from 0 to 1.
