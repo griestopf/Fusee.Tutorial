@@ -31,7 +31,7 @@ bottom (for y). In addition, very often the vertex shader also performs other ta
 Once these coordinates are known for all three vertices of a triangle, the render pipeline can figure out which pixels need to be filled with 
 color. Then for each of these pixels the pixel shader (provided by you, the programmer) is called. This process is called rasterization.
 
-![Pixel Shader: Calculate a color for each pixel] (_images/Pixelhader.png)
+![Pixel Shader: Calculate a color for each pixel] (_images/PixelShader.png)
 
 The 
 Once the rendering pipeline knows which of the 
