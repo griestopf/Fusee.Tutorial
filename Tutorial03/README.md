@@ -80,6 +80,7 @@ use to build our composite resulting transformations are:
  - Rotations
  - Scale (make objects bigger or smaller)
  - Projection (here: perspective projection making far objects appear small)
+ 
 Unfortunately only two of these transformation types, rotation and scale, can be expressed with 3x3 matrices. Help is on the way:
 If you use 4x4 matrices and apply some mathematical tricks how to make 3D vectors fourdimensional before applying matrix
 calculations and bring them back to three dimensions afterwards, you can indeed express translations and perspective projection and
@@ -98,7 +99,7 @@ faces we need to specify three normals for each vertex. This is not possible, so
 two times. This way we have three "physical" vertices at each of the eight different vertex positions - in sum 24 vertices. 
 The following image shows the indices of the 24 vertices in the `_mesh` indicated by the respective normal defined at the same indices. 
 
-![A Cube: Each vertex exists three times with three different normals] (_images/VertsAndNormals.png.png)
+![A Cube: Each vertex exists three times with three different normals] (_images/VertsAndNormals.png)
 
 
 ##Exercise
