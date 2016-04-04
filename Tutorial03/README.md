@@ -3,7 +3,8 @@
 ##Goals Tut 03
  - Get a better understanding of the shaders' tasks.
  - Understand why we need 4x4 matrices (and not 3x3) to perform transformations.
- - 
+ - Grasp the indexing scheme in `Mesh` and how edges in geometry require that vertices
+   are passed through the vertex shader more than once.
  
 ##Get that 3D Look
 In the tutorials so far the generated output looked rather flat. Even the 3D-tetrahedron in [Tutorial 02] (../Tutorial02) really looked rather
@@ -97,10 +98,13 @@ colors. To do this (and also prepare for a more accurate color calculation) we s
 the vertex shader can access the orienation of the face at that special vertex. BUT: Since each vertex of the cube is shared by three
 faces we need to specify three normals for each vertex. This is not possible, so all we can do is to duplicate each vertex position 
 two times. This way we have three "physical" vertices at each of the eight different vertex positions - in sum 24 vertices. 
-The following image shows the indices of the 24 vertices in the `_mesh` indicated by the respective normal defined at the same indices. 
+The following image shows the indices of the 24 vertices in the `_mesh` indicated by the respective normal. 
 
 ![A Cube: Each vertex exists three times with three different normals] (_images/VertsAndNormals.png)
 
+###Practice
+ - Take a look at `_mesh.Vertices` and `_mesh.Normal` and understand that one index in `_mesh.Triangles` identifies a pair of one vertex 
+   and one normal. For a given index find  the vertex and and normal in the image above and check that the image is correct from the vertex' and the normal's coordinates.
 
 ##Exercise
  - xxx
