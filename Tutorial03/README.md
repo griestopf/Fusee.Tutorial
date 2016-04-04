@@ -8,9 +8,10 @@
 ##Get that 3D Look
 In the tutorials so far the generated output looked rather flat. Even the 3D-tetrahedron in [Tutorial 02] (../Tutorial02) really looked rather
 like a flat triangle. This has two reasons:
-1. The individual pixel's colors are not calculated in a way that makes the objects appear 3D.
-2. So far we used a parallel projection instead of a perspective projection to display 3D coordinates on 
-   a 2D display.
+
+ 1. The individual pixel's colors are not calculated in a way that makes the objects appear 3D.
+ 2. So far we used a parallel projection instead of a perspective projection to display 3D coordinates on 
+    a 2D display.
 
 While we will address reason 1 in one of the upcoming tutorials (and NOT in this one), we want to take a closer look at coordinate transformations.
 
