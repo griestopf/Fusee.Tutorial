@@ -39,26 +39,66 @@ it can call the pixel shader to do its task and fill any of the pixels covered b
 ###Transformations = Matrices
 So what the vertex shader needs to do is: Perform transformations on incoming coordinates. Typically, the tranformation performed on each 
 vertex is a composition of a long list of individual simple transformations. Consider a car racing game where for a single frame the model 
-of a wheel of the car should be rendered. Each vertex of the wheel model is passed in the wheel's model coordinate system. From there it 
-should be transformed into the coordinate system of the car's body, so at a translation and some rotations must be performed. The whole 
-car is placed somewhere on the game's "World", so another translation and some rotations must be applied. The whole scene is seen from 
-some virtual camera which is positioned and oriented somewhere within in the world, so to yield screen coordinates the inverted camera's
-position and orienation must be applied and at the end the generated image should be perspectively 
+of a wheel of the car should be rendered. Each vertex of the wheel model is passed into the pipeline in  the wheel's model 
+coordinate system. From there it should be transformed into the coordinate system of the car's body, so at a translation and 
+some rotations must be performed. The whole car is placed somewhere on the game's "World", so another translation and some 
+rotations must be applied. The whole scene is seen from some virtual camera which is positioned and oriented somewhere within in 
+the world, so to yield screen coordinates the inverted camera's position and orienation must be applied and at the end the 
+generated image should be perspectively projected, so a projection transformation needs to applied that minimizes distances 
+between vertices far away and magnifies distances between near vertices.
 
+Since geometry typically consists of a huge amount of vertices, it is desirable to cummulate a long list of transformations into
+one single resulting transformation that can be applied in one single step to each vertex. This is where matrices come into play.
+As we saw in [Tutorial 01] (../Tutorial01), mathematically we can describe a transformation such as a rotation in matrix form. 
+Matrix calculus is assosiative, which means I can either take a vertex, multiply it to the first of a long list of matrices, take
+the result and multiply it with the second matrix and so on OR I can first multiply all matrices in the order of application and
+have one resulting matrix which I can then apply to all vertices sharing the same transformation (because they are part of the same
+model).
 
-As we saw in [Tutorial 01] (../Tutorial01), mathematically we can 
-describe transformations as matrices. 
+In FUSEE we're using column-order notation of matrix calculus where a vector is multiplied to the right side of a matrix. Thus, 
+a list of matrices applied to a vector would be written as
+```C#
+M3 * M2 * M1 * v
+```
+where v is a vector and M1 is the first transformation to be applied to v and M3 the last transformation. So according to the
+associative law instead of calculating each Matrix one by one like this
+```C#
+M3 * (M2 * (M1 * v))
+```
+you can first multiply all transformation matrices into one single resulting transformation matrix and apply this to the vector
+```C#
+  (M3 * M2 * M1) * v
+=      MRes      * v  
+```
+The advantage in the second line is: if you have not only one v but hundrets of thousands of vertices that need to be transformed in the same
+way, you save a lot of calculations.
+
+So let's say a big thank you to the inventors of matrix calculation. BUT - there's one tiny drawback: The building blocks we want to
+use to build our composite resulting transformations are:
+ - Translation (changing positions)
+ - Rotations
+ - Scale (make objects bigger or smaller)
+ - Projection (here: perspective projection making far objects appear small)
+Unfortunately only two of these transformation types, rotation and scale, can be expressed with 3x3 matrices. Help is on the way:
+If you use 4x4 matrices and apply some mathematical tricks how to make 3D vectors fourdimensional before applying matrix
+calculations and bring them back to three dimensions afterwards, you can indeed express translations and perspective projection and
+still have that nice feature called associative law.
+
+We don't need to go into maths much deeper now. But you should know now why we operate with 4x4 matrices
+although all we want to do is transform some 3D vertices.
+
+##Normals
+Open `Tutorial03.sln` in Visual Studio and look into the file [Core/Tutorial.cs] (Core/Tutorial.cs). The geometry has become a lot more
+complex now. We want to display a cube. With what we already know, we should think a cube is made out of eight vertices and each of the six 
+faces made out of two triangles, so twelve triangles hooked on eight vertices. But now we want to display different faces with different 
+colors. To do this (and also prepare for a more accurate color calculation) we specify the face normals with the vertices. This way
+the vertex shader can access the orienation of the face at that special vertex. BUT: Since each vertex of the cube is shared by three
+faces we need to specify three normals for each vertex. This is not possible, so all we can do is to duplicate each vertex position 
+two times. This way we have three "physical" vertices at each of the eight different vertex positions - in sum 24 vertices. 
+The following image shows the indices of the 24 vertices in the `_mesh` indicated by the respective normal defined at the same indices. 
+
+![A Cube: Each vertex exists three times with three different normals] (_images/VertsAndNormals.png.png)
 
 
 ##Exercise
- - Create a more complex geometry (e.g. a little house)
- - Rotate around two axes and/or move along two axes controlled by input devices. You can use two-dimensional uniform variables. 
-   The GLSL (shader language) data type for two-dimensional values is [vec2] (https://www.opengl.org/wiki/Data_Type_(GLSL))
- - Implement actions (like rotating) only working if the left mouse button is pressed (`Mouse.LeftButton`).
- - Try to combine the input from Mouse, Touch and Keyboard. To retrieve speed-like values from the keyboard, use the
-   `LeftRightAxis` and `UpDownAxis`, or the `ADAxis` and `WSAxis` properties.
- - Extend your pixel shader to create a highlight on the geometry based on the mouse cursor position: The color should become lighter, the closer the 
-   mouse cursor is to the pixel the pixel shader is called for. You will need to pass the mouse position (`uniform`ly) to the pixel shader and
-   also need the (`varying`) pixel's position. To measure the distance between two 2D-Points (`vec2`) within a shader you can use the 
-   [distance function] (https://www.opengl.org/sdk/docs/man/html/distance.xhtml).   
-
+ - xxx

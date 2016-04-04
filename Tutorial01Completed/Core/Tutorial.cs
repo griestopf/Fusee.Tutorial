@@ -47,7 +47,6 @@ namespace Fusee.Tutorial.Core
                 },
                 Triangles = new ushort[] {0, 1, 2},
             };
-
             var shader = RC.CreateShader(_vertexShader, _pixelShader);
             RC.SetShader(shader);
 

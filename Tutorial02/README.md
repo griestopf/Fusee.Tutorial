@@ -10,7 +10,7 @@
  - Make sure you got [Tutorial01] (../Tutorial01) up and running.
  
 ##Passing more information through the pipeline
-First, let's add some more triangles to the geometry. Add one more vertex and span four triangles with the four vertices to creatae a Tetrahedron ("a triangular pyramid"). Extend the Mesh instantiation in (Core/Tutorial.cs) [Core/Tutorial.cs] to the following (you may omit the comments):
+First, let's add some more triangles to the geometry. Add one more vertex and span four triangles with the four vertices to creatae a Tetrahedron ("a triangular pyramid"). Extend the Mesh instantiation in [Core/Tutorial.cs] (Core/Tutorial.cs) to the following (you may omit the comments):
 ```C#
 	_mesh = new Mesh
 	{

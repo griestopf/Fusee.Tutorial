@@ -105,9 +105,9 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Core\Fusee.Tutorial02.Core.csproj">
+    <ProjectReference Include="..\Core\Fusee.Tutorial03.Core.csproj">
       <Project>{4e534fdd-a963-448d-b2a6-f3e8b9f0bf69}</Project>
-      <Name>Fusee.Tutorial02.Core</Name>
+      <Name>Fusee.Tutorial03.Core</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)/Microsoft.CSharp.targets" />
