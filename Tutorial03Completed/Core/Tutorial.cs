@@ -42,6 +42,11 @@ namespace Fusee.Tutorial.Core
         private float _alpha;
         private float _beta;
 
+        private float _yawCube1;
+        private float _pitchCube1;
+        private float _yawCube2;
+        private float _pitchCube2;
+
         // Init is called on startup. 
         public override void Init()
         {
@@ -152,6 +157,15 @@ namespace Fusee.Tutorial.Core
             RC.ClearColor = new float4(0.1f, 0.3f, 0.2f, 1);
         }
 
+        static float4x4 ModelXForm(float3 pos, float3 rot, float3 pivot)
+        {
+            return float4x4.CreateTranslation(pos + pivot)
+                   *float4x4.CreateRotationY(rot.y)
+                   *float4x4.CreateRotationX(rot.x)
+                   *float4x4.CreateRotationZ(rot.z)
+                   *float4x4.CreateTranslation(-pivot);
+        }
+
         // RenderAFrame is called once a frame
         public override void RenderAFrame()
         {
@@ -165,18 +179,25 @@ namespace Fusee.Tutorial.Core
                 _beta  -= speed.y*0.0001f;
             }
 
+            _yawCube1 += Keyboard.ADAxis * 0.1f;
+            _pitchCube1 += Keyboard.WSAxis * 0.1f;
+            _yawCube2 += Keyboard.LeftRightAxis * 0.1f;
+            _pitchCube2 += Keyboard.UpDownAxis * 0.1f;
+
             // Setup matrices
             var aspectRatio = Width / (float)Height;
             var projection = float4x4.CreatePerspectiveFieldOfView(3.141592f * 0.25f, aspectRatio, 0.01f, 20);
             var view = float4x4.CreateTranslation(0, 0, 3)*float4x4.CreateRotationY(_alpha)*float4x4.CreateRotationX(_beta);
 
             // First cube
-            _xform = projection * view * float4x4.CreateTranslation(-0.6f, 0, 0) * float4x4.CreateScale(0.5f);
+            var cube1Model = ModelXForm(new float3(-0.5f, 0, 0), new float3(_pitchCube1, _yawCube1, 0), new float3(0, 0, 0));
+            _xform = projection * view * cube1Model * float4x4.CreateScale(0.5f, 0.1f, 0.1f);
             RC.SetShaderParam(_xformParam, _xform);
             RC.Render(_mesh);
 
             // Second cube
-            _xform = projection * view * float4x4.CreateTranslation(0.6f, 0, 0) * float4x4.CreateScale(0.5f);
+            var cube2Model = ModelXForm(new float3(1, 0, 0), new float3(_pitchCube2, _yawCube2, 0), new float3(-0.5f, 0, 0));
+            _xform = projection * view * cube1Model * cube2Model * float4x4.CreateScale(0.5f, 0.1f, 0.1f);
             RC.SetShaderParam(_xformParam, _xform);
             RC.Render(_mesh);
 
