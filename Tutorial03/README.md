@@ -448,13 +448,15 @@ both bars using the arrow keys.
 
 ![Arm example] (_images/Arms.png)
  
+See [Tutorial.cs] (../Tutorial03Completed/Core/Tutorial.cs) int the [Tutorial03 Completed] (../Tutorial03Completed) folder for 
+the overal state so far.
    
 ##Exercise
  - Create a little robot made out of a base, an upper arm and a forearm. Use two cubes to build the base, and one cube each for 
    upper arm and forearm.
  - Use the ```Keyboard``` axes to control the yaw of the base and the pitches of upper arm and forearm.
  - Set the arms pivot points to simulate physical joints at the connecting points.
- - Limit the camera pitch movement (_beta) to the range from -PI/2 to PI/2.
+ - Limit the camera pitch movement (```_beta```) to the range from -PI/2 to PI/2.
  - For mobile (touch only) devices: Try to figure out how to best match the five degrees of freedom (Camera pitch and yaw, three robot axes)
    to the six existing touch axes: Single point speed (2D), Two-Point-Midpoint (2D), Two-Point-Distance (1D), Two-Point-Angle (1D).
    
