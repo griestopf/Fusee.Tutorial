@@ -1,6 +1,6 @@
 #Tutorial 03
 
-##Goals Tut 03
+##Goals
  - Get a better understanding of the shaders' tasks.
  - Understand why we need 4x4 matrices (and not 3x3) to perform transformations.
  - Grasp the indexing scheme in `Mesh` and how edges in geometry require that vertices
@@ -131,35 +131,35 @@ it the incoming normal from ```fuNormal``` in the vertex shader. In the pixel sh
 to both, vertex and pixel shader.
 
 ```C#
-        private const string _vertexShader = @"
-            attribute vec3 fuVertex;
-            attribute vec3 fuNormal;
-            uniform float alpha;
-            varying vec3 modelpos;
-            varying vec3 normal;
-            void main()
-            {
-                modelpos = fuVertex;
-                normal = fuNormal;
-                float s = sin(alpha);
-                float c = cos(alpha);
-                gl_Position = vec4(0.5 * (fuVertex.x * c - fuVertex.z * s), 
-                                   0.5 *  fuVertex.y, 
-                                   0.5 * (fuVertex.x * s + fuVertex.z * c),
-                                   1.0);
-            }";
+	private const string _vertexShader = @"
+		attribute vec3 fuVertex;
+		attribute vec3 fuNormal;
+		uniform float alpha;
+		varying vec3 modelpos;
+		varying vec3 normal;
+		void main()
+		{
+			modelpos = fuVertex;
+			normal = fuNormal;
+			float s = sin(alpha);
+			float c = cos(alpha);
+			gl_Position = vec4(0.5 * (fuVertex.x * c - fuVertex.z * s), 
+							   0.5 *  fuVertex.y, 
+							   0.5 * (fuVertex.x * s + fuVertex.z * c),
+							   1.0);
+		}";
 
-        private const string _pixelShader = @"
-            #ifdef GL_ES
-                precision highp float;
-            #endif
-            varying vec3 modelpos;
-            varying vec3 normal;
+	private const string _pixelShader = @"
+		#ifdef GL_ES
+			precision highp float;
+		#endif
+		varying vec3 modelpos;
+		varying vec3 normal;
 
-            void main()
-            {
-                gl_FragColor = vec4(normal*0.5 + 0.5, 1);
-            }";
+		void main()
+		{
+			gl_FragColor = vec4(normal*0.5 + 0.5, 1);
+		}";
 ```
 
 Note that we did not dispose of ```modelpos``` at this point, although we don`t need the variable right now. You may delete it in both
@@ -168,6 +168,57 @@ shaders, if you wish.
 Build and run the changes to see how our cube geometry now has a unique single color applied to every face now.
 
 ![The shaders now display the normal information] (_images/Cube02.png)
+
+##Matrix from outside
+As we know now, we can compose complex transformations from simple "atomic" tranformations like translation, rotation and scale. Instead
+of doing matrix calculations in the vertex shader (where we need the transformation), we compose one single matrix outside the vertex
+shader and then apply that matrix to all incoming vertices belonging to one mesh.
+
+So we rewrite our vertex shader to accept a uniform matrix variable that it will apply to the vertex it is called for. The datatype for
+4x4 matrices in GLSL, our shader language is ```mat4```. The datatype defined by FUSEE for 4x4 matrices is ```float4x4```.
+
+In the vertex shader, remove the ```uniform``` variable ```alpha``` which we used to hold the current rotation angle and replace it by a ```uniform``` 
+variable called ```xform```:
+
+```C#
+	private const string _vertexShader = @"
+		attribute vec3 fuVertex;
+		attribute vec3 fuNormal;
+		uniform mat4 xform;
+		varying vec3 modelpos;
+		varying vec3 normal;
+		void main()
+		{
+			modelpos = fuVertex;
+			normal = fuNormal;
+			gl_Position = xform * vec4(fuVertex, 1.0);
+		}";
+```
+
+Instead of handling ```alpha``` as a shader variable from the 'outside' C# code, we now need to handle ```xform```. Note that we do not completely delete ```_alpha```. Apply the following changes to the C# code:
+
+ - Declaration:
+   ```C#
+	   private IShaderParam _xformParam;
+	   private float4x4 _xform;
+	   private float _alpha;
+   ```
+
+ - Inside ```Init()```:
+   ```C#
+	   _xformParam = RC.GetShaderParam(shader, "xform");
+	   _xform = float4x4.Identity;
+   ```
+
+ - Inside ```RenderAFrame()```:
+   ```C#
+	   _xform = float4x4.CreateRotationY(_alpha) * float4x4.CreateScale(0.5f);
+	   RC.SetShaderParam(_xformParam, _xform);
+   ```
+
+
+
+
 
 
 
