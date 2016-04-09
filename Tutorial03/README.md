@@ -16,7 +16,7 @@ like a flat triangle. This has two reasons:
 
 While we will address reason 1 in one of the upcoming tutorials (and NOT in this one), we want to take a closer look at coordinate transformations.
 
-###Shaders revisited
+##Shaders revisited
 But before that let's revisit what we already know about the rendering pipeline and shaders. As we already know, a vertex shader is called for each
 vertex passed through the rendering pipeline. One of the main goals a vertex shader has to accomplish is to transform coordinates from the
 coordinate system they are in when they enter the rendering pipeline to a coordinate system that resembles the display's (two) main axes. 
@@ -37,58 +37,6 @@ be filled with color. Then for each of these pixels the pixel shader (provided b
 
 Once the rendering pipeline knows which of the screen`s pixels are covered by geometry (the dark pixels on the left side of the image above),
 it can call the pixel shader to do its task and fill any of the pixels covered by geometry with an individually calculated color.
-
-###Transformations = Matrices
-So what the vertex shader needs to do is: Perform transformations on incoming coordinates. Typically, the tranformation performed on each 
-vertex is a composition of a long list of individual simple transformations. Consider a car racing game where for a single frame the model 
-of a wheel of the car should be rendered. Each vertex of the wheel model is passed into the pipeline in  the wheel's model 
-coordinate system. From there it should be transformed into the coordinate system of the car's body, so at a translation and 
-some rotations must be performed. The whole car is placed somewhere on the game's "World", so another translation and some 
-rotations must be applied. The whole scene is seen from some virtual camera which is positioned and oriented somewhere within in 
-the world, so to yield screen coordinates the inverted camera's position and orienation must be applied and at the end the 
-generated image should be perspectively projected, so a projection transformation needs to applied that minimizes distances 
-between vertices far away and magnifies distances between near vertices.
-
-Since geometry typically consists of a huge amount of vertices, it is desirable to cummulate a long list of transformations into
-one single resulting transformation that can be applied in one single step to each vertex. This is where matrices come into play.
-As we saw in [Tutorial 01] (../Tutorial01), mathematically we can describe a transformation such as a rotation in matrix form. 
-Matrix calculus is assosiative, which means I can either take a vertex, multiply it to the first of a long list of matrices, take
-the result and multiply it with the second matrix and so on OR I can first multiply all matrices in the order of application and
-have one resulting matrix which I can then apply to all vertices sharing the same transformation (because they are part of the same
-model).
-
-In FUSEE we're using column-order notation of matrix calculus where a vector is multiplied to the right side of a matrix. Thus, 
-a list of matrices applied to a vector would be written as
-```C#
-M3 * M2 * M1 * v
-```
-where v is a vector and M1 is the first transformation to be applied to v and M3 the last transformation. So according to the
-associative law instead of calculating each Matrix one by one like this
-```C#
-M3 * (M2 * (M1 * v))
-```
-you can first multiply all transformation matrices into one single resulting transformation matrix and apply this to the vector
-```C#
-  (M3 * M2 * M1) * v
-=      MRes      * v  
-```
-The advantage in the second line is: if you have not only one v but hundrets of thousands of vertices that need to be transformed in the same
-way, you save a lot of calculations.
-
-So let's say a big thank you to the inventors of matrix calculation. BUT - there's one tiny drawback: The building blocks we want to
-use to build our composite resulting transformations are:
- - Translation (changing positions)
- - Rotations
- - Scale (make objects bigger or smaller)
- - Projection (here: perspective projection making far objects appear small)
- 
-Unfortunately only two of these transformation types, rotation and scale, can be expressed with 3x3 matrices. Help is on the way:
-If you use 4x4 matrices and apply some mathematical tricks how to make 3D vectors fourdimensional before applying matrix
-calculations and bring them back to three dimensions afterwards, you can indeed express translations and perspective projection and
-still have that nice feature called associative law.
-
-We don't need to go into maths much deeper now. But you should know now why we operate with 4x4 matrices
-although all we want to do is transform some 3D vertices.
 
 ##Normals
 Open `Tutorial03.sln` in Visual Studio and look into the file [Core/Tutorial.cs] (Core/Tutorial.cs). The mesh has become a lot more
@@ -169,6 +117,64 @@ Build and run the changes to see how our cube geometry now has a unique single c
 
 ![The shaders now display the normal information] (_images/Cube02.png)
 
+###Practice
+ - Rotate the cube and explain for each of the four visible faces of the cube which normal value is responsible for the color
+   given to that face (in other words: Which are the colors for back, left, right and front).
+
+   
+##Transformations = Matrices
+What the vertex shader needs to do is: Perform transformations on incoming coordinates. Typically, the tranformation performed on each 
+vertex is a composition of a long list of individual simple transformations. Consider a car racing game where for a single frame the model 
+of a wheel of the car should be rendered. Each vertex of the wheel model is passed into the pipeline in  the wheel's model 
+coordinate system. From there it should be transformed into the coordinate system of the car's body, so at a translation and 
+some rotations must be performed. The whole car is placed somewhere on the game's "World", so another translation and some 
+rotations must be applied. The whole scene is seen from some virtual camera which is positioned and oriented somewhere within in 
+the world, so to yield screen coordinates the inverted camera's position and orienation must be applied and at the end the 
+generated image should be perspectively projected, so a projection transformation needs to applied that minimizes distances 
+between vertices far away and magnifies distances between near vertices.
+
+Since geometry typically consists of a huge amount of vertices, it is desirable to cummulate a long list of transformations into
+one single resulting transformation that can be applied in one single step to each vertex. This is where matrices come into play.
+As we saw in [Tutorial 01] (../Tutorial01), mathematically we can describe a transformation such as a rotation in matrix form. 
+Matrix calculus is assosiative, which means I can either take a vertex, multiply it to the first of a long list of matrices, take
+the result and multiply it with the second matrix and so on OR I can first multiply all matrices in the order of application and
+have one resulting matrix which I can then apply to all vertices sharing the same transformation (because they are part of the same
+model).
+
+In FUSEE we're using column-order notation of matrix calculus where a vector is multiplied to the right side of a matrix. Thus, 
+a list of matrices applied to a vector would be written as
+```C#
+M3 * M2 * M1 * v
+```
+where v is a vector and M1 is the first transformation to be applied to v and M3 the last transformation. So according to the
+associative law instead of calculating each Matrix one by one like this
+```C#
+M3 * (M2 * (M1 * v))
+```
+you can first multiply all transformation matrices into one single resulting transformation matrix and apply this to the vector
+```C#
+  (M3 * M2 * M1) * v
+=      MRes      * v  
+```
+The advantage in the second line is: if you have not only one v but hundrets of thousands of vertices that need to be transformed in the same
+way, you save a lot of calculations.
+
+So let's say a big thank you to the inventors of matrix calculation. BUT - there's one tiny drawback: The building blocks we want to
+use to build our composite resulting transformations are:
+ - Translation (changing positions)
+ - Rotations
+ - Scale (make objects bigger or smaller)
+ - Projection (here: perspective projection making far objects appear small)
+ 
+Unfortunately only two of these transformation types, rotation and scale, can be expressed with 3x3 matrices. Help is on the way:
+If you use 4x4 matrices and apply some mathematical tricks how to make 3D vectors fourdimensional before applying matrix
+calculations and bring them back to three dimensions afterwards, you can indeed express translations and perspective projection and
+still have that nice feature called associative law.
+
+We don't need to go into maths much deeper now. But you should know now why we operate with 4x4 matrices
+although all we want to do is transform some 3D vertices.
+   
+   
 ##Matrix from outside
 As we know now, we can compose complex transformations from simple "atomic" tranformations like translation, rotation and scale. Instead
 of doing matrix calculations in the vertex shader (where we need the transformation), we compose one single matrix outside the vertex
@@ -181,18 +187,18 @@ In the vertex shader, remove the ```uniform``` variable ```alpha``` which we use
 variable called ```xform```:
 
 ```C#
-		private const string _vertexShader = @"
-			attribute vec3 fuVertex;
-			attribute vec3 fuNormal;
-			uniform mat4 xform;
-			varying vec3 modelpos;
-			varying vec3 normal;
-			void main()
-			{
-				modelpos = fuVertex;
-				normal = fuNormal;
-				gl_Position = xform * vec4(fuVertex, 1.0);
-			}";
+	private const string _vertexShader = @"
+		attribute vec3 fuVertex;
+		attribute vec3 fuNormal;
+		uniform mat4 xform;
+		varying vec3 modelpos;
+		varying vec3 normal;
+		void main()
+		{
+			modelpos = fuVertex;
+			normal = fuNormal;
+			gl_Position = xform * vec4(fuVertex, 1.0);
+		}";
 ```
 
 Instead of handling ```alpha``` as a shader variable from the 'outside' C# code, we now need to handle ```xform```. Note that we do not completely delete ```_alpha```. Apply the following changes to the C# code:
@@ -213,7 +219,7 @@ Instead of handling ```alpha``` as a shader variable from the 'outside' C# code,
 		_xform = float4x4.Identity;
    ```
    Note that we changed the operation on alpha from ```+=``` to ```-=```! This is due to the fact that 
-   from now on we will be using FUSEE`s matrix calculation methods which operate on a left-handed coordinate
+   from now on we will be using FUSEE'`s matrix calculation methods which operate on a left-handed coordinate
    system instead of a right-handed coordinate system implicitely assumed by OpenGL.
 
  - Inside ```RenderAFrame()```:
@@ -222,10 +228,67 @@ Instead of handling ```alpha``` as a shader variable from the 'outside' C# code,
 		RC.SetShaderParam(_xformParam, _xform);
    ```
 
+Build and run these changes and make sure that the output is the same as before.   
+   
 ###Practice
- - Understand the changes applied above
+ - Understand the changes applied above - Note how we now have one single matrix (```xform```) which we can use to
+   apply any tranformation to (given that the transformation can be expressed as a matrix).
+ - Try to compose ```_xform``` out of more transformations, probably also controlled by input axes. See which other
+   transformations can be created by the various ```float.Create...``` methods.
+ - Try to change the order of the individual transformations your ```_xform``` is composed of and explain what happens.
+   In which order are the transformations applied to a vertex?
+ - Explain why it's better to compose ```_xform``` in the C# ```RenderAFrame()``` method than composing it in the 
+   vertex shader.
 
+##Perspective and Aspect Ratio
+Now we're ready for 3D :-). The coordinates our vertex shader writes out to ```gl_Position``` as the resulting
+screen coordinates are in 4D: ```(x, y, z, w)```. The rendering pipeline takes these coordinates as they drop out of our
+vertex shader and further processes them as follows:
 
+ 1. Make a 3D coordinate out of the 4D coordinate by divding the first three coordinates by the last:
+    ```(x, y, z, w)  ->  (x/w, y/w, z/w)```
+	
+ 2. Use the first two coordinate axes (x and y) as the screen coordinate axes. Use the resulting z value (z/w) 
+    as the depth of that vertex. The depth will be used in per-pixel occlusion calculations (z-buffer) later on.
+
+So far, the transformation provided in ```xform``` didn't apply any changes to x and y based on the vertex' distance
+to the viewer (e.g., its z-coordinate). From natural viewing, our experience is that distances far away appear much
+smaller than distances directly before our eyes. To create this perspective viewing, we need to provide a transformation
+(in ```_xform``` that makes a vertex' x and y coordinates smaller, if that vertex' z-coordinate is big and vice versa. 
+
+We can do this by providing a matrix that writes a w-coordinate into the resulting vertex which is very much the coordinate's
+z-value. Because later on, the rendering pipeline will divide x and y by w, the result will right what we desire: A
+perspective projection where object far away are smaller than object close to the viewer.
+
+Don't worry, you won't have to bother how to setup a matrix that accomplishes this. You can simply use 
+```float4x4.CreatePerspectiveFieldOfView``` to have FUSEE calculate a matrix for you. This method takes four arguments:
+
+ 1. The field of view angle of the horizontal axis which is the opening angle of the camera provided in radians. There is a 1:1 relation
+    of this angle to the focal distance used in photography to measure the opening angle (or the "zoom factor").
+ 2. The current aspect ratio of the rendering window (a.k.a the viewport). This value is used to stretch or shrink values along the 
+    vertical axis to compensate for non-square rendering windows. 
+ 3. The *Near Clipping Plane*. Vertices with smaller z values than this will be clipped (not visible).
+ 4. The *Far Clipping Plane*. Vertices with bigger z values than this will also be clipped (not visible).
+ 
+Now let's use ```float4x4.CreatePerspectiveFieldOfView```. Change the place in ``RenderAFrame()``` where you assemble your 
+```xform```-Matrix:
+
+```C#
+	var aspectRatio = Width / (float)Height;
+	var projection = float4x4.CreatePerspectiveFieldOfView(3.141592f * 0.25f, aspectRatio, 0.01f, 20);
+	_xform = projection * float4x4.CreateTranslation(0, 0, 3) * float4x4.CreateRotationY(_alpha) * float4x4.CreateScale(0.5f);
+```
+
+Building and running this now shows a cube perspectively displayed from the side.
+
+![The shaders now display the normal information] (_images/Cube03.png)
+
+###Practice
+ - Note that we needed to insert a translation about 3 units along the z-axis. Understand that this is necessary to move the geometry
+   into the visible range between the near and the far clipping plane. What happens if we omit this translation?
+ - If you didn't until now: Apply a second rotation around the x-axis controlled by the mouse- or touch-velocity along the screen's 
+   y-axis to see the top and bottom faces of the cube.
+   
 
 
 

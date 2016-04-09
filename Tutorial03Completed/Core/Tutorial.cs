@@ -163,7 +163,11 @@ namespace Fusee.Tutorial.Core
             if (Mouse.LeftButton || Touch.GetTouchActive(TouchPoints.Touchpoint_0))
                 _alpha -= speed.x * 0.0001f;
 
-            _xform = float4x4.CreateRotationY(_alpha) * float4x4.CreateScale(0.5f);
+            var aspectRatio = Width / (float)Height;
+            var projection = float4x4.CreatePerspectiveFieldOfView(3.141592f * 0.25f, aspectRatio, 0.01f, 20);
+
+            _xform = projection * float4x4.CreateTranslation(0, 0, 3) * float4x4.CreateRotationY(_alpha) * float4x4.CreateScale(0.5f);
+
             RC.SetShaderParam(_xformParam, _xform);
 
             RC.Render(_mesh);
