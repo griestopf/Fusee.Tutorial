@@ -40,8 +40,7 @@ namespace Fusee.Tutorial.Core
         private IShaderParam _xformParam;
         private float4x4 _xform;
         private float _alpha;
-
-
+        private float _beta;
 
         // Init is called on startup. 
         public override void Init()
@@ -161,15 +160,24 @@ namespace Fusee.Tutorial.Core
 
             float2 speed = Mouse.Velocity + Touch.GetVelocity(TouchPoints.Touchpoint_0);
             if (Mouse.LeftButton || Touch.GetTouchActive(TouchPoints.Touchpoint_0))
-                _alpha -= speed.x * 0.0001f;
+            {
+                _alpha -= speed.x*0.0001f;
+                _beta  -= speed.y*0.0001f;
+            }
 
+            // Setup matrices
             var aspectRatio = Width / (float)Height;
             var projection = float4x4.CreatePerspectiveFieldOfView(3.141592f * 0.25f, aspectRatio, 0.01f, 20);
+            var view = float4x4.CreateTranslation(0, 0, 3)*float4x4.CreateRotationY(_alpha)*float4x4.CreateRotationX(_beta);
 
-            _xform = projection * float4x4.CreateTranslation(0, 0, 3) * float4x4.CreateRotationY(_alpha) * float4x4.CreateScale(0.5f);
-
+            // First cube
+            _xform = projection * view * float4x4.CreateTranslation(-0.6f, 0, 0) * float4x4.CreateScale(0.5f);
             RC.SetShaderParam(_xformParam, _xform);
+            RC.Render(_mesh);
 
+            // Second cube
+            _xform = projection * view * float4x4.CreateTranslation(0.6f, 0, 0) * float4x4.CreateScale(0.5f);
+            RC.SetShaderParam(_xformParam, _xform);
             RC.Render(_mesh);
 
             // Swap buffers: Show the contents of the backbuffer (containing the currently rendered farame) on the front buffer.

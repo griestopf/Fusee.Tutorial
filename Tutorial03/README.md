@@ -246,6 +246,7 @@ screen coordinates are in 4D: ```(x, y, z, w)```. The rendering pipeline takes t
 vertex shader and further processes them as follows:
 
  1. Make a 3D coordinate out of the 4D coordinate by divding the first three coordinates by the last:
+ 
     ```(x, y, z, w)  ->  (x/w, y/w, z/w)```
 	
  2. Use the first two coordinate axes (x and y) as the screen coordinate axes. Use the resulting z value (z/w) 
@@ -281,14 +282,74 @@ Now let's use ```float4x4.CreatePerspectiveFieldOfView```. Change the place in `
 
 Building and running this now shows a cube perspectively displayed from the side.
 
-![The shaders now display the normal information] (_images/Cube03.png)
+![The cube in three dimensions] (_images/Cube03.png)
 
 ###Practice
  - Note that we needed to insert a translation about 3 units along the z-axis. Understand that this is necessary to move the geometry
    into the visible range between the near and the far clipping plane. What happens if we omit this translation?
  - If you didn't until now: Apply a second rotation around the x-axis controlled by the mouse- or touch-velocity along the screen's 
    y-axis to see the top and bottom faces of the cube.
-   
+ - What happens if you change the order of the translation and the rotation(s) in ```_xform```?
+ 
+##More Cubes
+Now let's add another cube and make this one a "child" of the first cube. We display two cubes just by rendering our single cube 
+twice and change the transformation matrix between the two rendering operations to make the cubes appear at different places. Here's
+the complete ```RenderAFrame``` implementation doing that:
+
+```C#
+	public override void RenderAFrame()
+	{
+		// Clear the backbuffer
+		RC.Clear(ClearFlags.Color | ClearFlags.Depth);
+
+		float2 speed = Mouse.Velocity + Touch.GetVelocity(TouchPoints.Touchpoint_0);
+		if (Mouse.LeftButton || Touch.GetTouchActive(TouchPoints.Touchpoint_0))
+		{
+			_alpha -= speed.x*0.0001f;
+			_beta  -= speed.y*0.0001f;
+		}
+
+		// Setup matrices
+		var aspectRatio = Width / (float)Height;
+		var projection = float4x4.CreatePerspectiveFieldOfView(3.141592f * 0.25f, aspectRatio, 0.01f, 20);
+
+		// First cube
+		_xform = projection 
+			* float4x4.CreateTranslation(0, 0, 3) * float4x4.CreateRotationY(_alpha) * float4x4.CreateRotationX(_beta)
+			* float4x4.CreateTranslation(-0.6f, 0, 0) * float4x4.CreateScale(0.5f);
+		RC.SetShaderParam(_xformParam, _xform);
+		RC.Render(_mesh);
+
+		// Second cube
+		_xform = projection
+			* float4x4.CreateTranslation(0, 0, 3) * float4x4.CreateRotationY(_alpha) * float4x4.CreateRotationX(_beta)
+			* float4x4.CreateTranslation(0.6f, 0, 0) * float4x4.CreateScale(0.5f);
+		RC.SetShaderParam(_xformParam, _xform);
+		RC.Render(_mesh);
+
+		// Swap buffers: Show the contents of the backbuffer (containing the currently rendered farame) on the front buffer.
+		Present();
+	}
+```
+
+Building and running this so far should produce two cubes rotating a round a common center in two axes (you might introduce
+```private float _beta``` as a field to contain the second rotation angle).
+
+![Two cubes around a common center] (_images/TwoCubes01.png)
+
+###Practice
+  - Just for the fun out of it, change the order of rotatons and translation in both ```_xform``` assignments above. Here's
+    how to do it for one:
+	
+	```C#
+		// First cube
+		_xform = projection 
+			* float4x4.CreateTranslation(0, 0, 3) * * float4x4.CreateTranslation(-0.6f, 0, 0)
+			float4x4.CreateRotationY(_alpha) * float4x4.CreateRotationX(_beta) * float4x4.CreateScale(0.5f);
+    ```
+	Now have fun rotating the two cubes at once, but each rotating around its own center.
+	![Two cubes each rotatin around its own center] (_images/TwoCubes02.png)
+
 
 
 
