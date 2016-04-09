@@ -7,6 +7,7 @@ Step-by-step tutorial to get familiar with [FUSEE] (http://www.fusee3d.org)
  
  - [Tutorial 02] (Tutorial02): Shader Parameters, Parameter interpolation, Animation and Input.
  
+ - [Tutorial 03] (Tutorial03): Matrices, Normals, Visible edges in geometry.
  
  
 

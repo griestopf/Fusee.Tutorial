@@ -13,12 +13,14 @@ namespace Fusee.Tutorial.Core
         private Mesh _mesh;
         private const string _vertexShader = @"
             attribute vec3 fuVertex;
+            attribute vec3 fuNormal;
             uniform float alpha;
             varying vec3 modelpos;
-
+            varying vec3 normal;
             void main()
             {
                 modelpos = fuVertex;
+                normal = fuNormal;
                 float s = sin(alpha);
                 float c = cos(alpha);
                 gl_Position = vec4(0.5 * (fuVertex.x * c - fuVertex.z * s), 
@@ -32,10 +34,11 @@ namespace Fusee.Tutorial.Core
                 precision highp float;
             #endif
             varying vec3 modelpos;
+            varying vec3 normal;
 
             void main()
             {
-                gl_FragColor = vec4(modelpos*0.5 + 0.5, 1);
+                gl_FragColor = vec4(normal*0.5 + 0.5, 1);
             }";
 
 

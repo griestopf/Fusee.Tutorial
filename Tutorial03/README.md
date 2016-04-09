@@ -91,7 +91,7 @@ We don't need to go into maths much deeper now. But you should know now why we o
 although all we want to do is transform some 3D vertices.
 
 ##Normals
-Open `Tutorial03.sln` in Visual Studio and look into the file [Core/Tutorial.cs] (Core/Tutorial.cs). The geometry has become a lot more
+Open `Tutorial03.sln` in Visual Studio and look into the file [Core/Tutorial.cs] (Core/Tutorial.cs). The mesh has become a lot more
 complex now. We want to display a cube. With what we already know, we should think a cube is made out of eight vertices and each of the six 
 faces made out of two triangles, so twelve triangles hooked on eight vertices. But now we want to display different faces with different 
 colors. To do this (and also prepare for a more accurate color calculation) we specify the face normals with the vertices. This way
@@ -102,9 +102,80 @@ The following image shows the indices of the 24 vertices in the `_mesh` indicate
 
 ![A Cube: Each vertex exists three times with three different normals] (_images/VertsAndNormals.png)
 
+Besides the changed ```_mesh``` geometry there are three more slight changes applied to the code compared to the [completed Tutorial02 source code] (../Tutorial02Completed/Core/Tutorial.cs):
+
+ 1. The mouse input is only applied to the rotation angle if the left mouse button is presssed. 
+ 
+ 2. Touch input is processed as an alternative to mouse input to allow interactions on android devices.
+ 
+ 3. The geometry is scaled by 0.5 in each dimension in the vertex shader. Since the cube's vertices are all positioned one unit away from 
+    the coordinate system's origin, we need to downscale the cube to avoid clipping part of it if it's rotated.
+	
+Build and run Tutorial 03 on your favorite platform and look at the result.
+
+![The tutorial 03 in it's original state] (_images/Cube01.png)
+
 ###Practice
  - Take a look at `_mesh.Vertices` and `_mesh.Normal` and understand that one index in `_mesh.Triangles` identifies a pair of one vertex 
-   and one normal. For a given index find  the vertex and and normal in the image above and check that the image is correct from the vertex' and the normal's coordinates.
+   and one normal. 
+ - Try to match the contents of `_mesh.Vertices` and `_mesh.Normal` with the image above: For a given index find  the vertex and and normal
+   in the image above and check that the image is correct from the vertex' and the normal's coordinates.
+  
+##Normal Shading
+Now we need to pass through the normal information provided with the vertices. If a mesh contains normals, FUSEE already passes the 
+normals on to the vertex shader through the reserved attribute ```fuNormal```. This is just the same way as a mesh's vertices are 
+passed to the vertex shader through ```fuVertex```. Since this tutorial is not yet about lighting calculation, we just want the normal
+to be present in the pixel shader. So we add a a variable ```varying normal``` to both, the vertex and the pixel shader and assignt to 
+it the incoming normal from ```fuNormal``` in the vertex shader. In the pixel shader, we then can 'abuse' the information contained in 
+```normal``` instead of the contents of ```modelpos``` as a pixel color. The following code snippet contains the overall changes applied 
+to both, vertex and pixel shader.
 
+```C#
+        private const string _vertexShader = @"
+            attribute vec3 fuVertex;
+            attribute vec3 fuNormal;
+            uniform float alpha;
+            varying vec3 modelpos;
+            varying vec3 normal;
+            void main()
+            {
+                modelpos = fuVertex;
+                normal = fuNormal;
+                float s = sin(alpha);
+                float c = cos(alpha);
+                gl_Position = vec4(0.5 * (fuVertex.x * c - fuVertex.z * s), 
+                                   0.5 *  fuVertex.y, 
+                                   0.5 * (fuVertex.x * s + fuVertex.z * c),
+                                   1.0);
+            }";
+
+        private const string _pixelShader = @"
+            #ifdef GL_ES
+                precision highp float;
+            #endif
+            varying vec3 modelpos;
+            varying vec3 normal;
+
+            void main()
+            {
+                gl_FragColor = vec4(normal*0.5 + 0.5, 1);
+            }";
+```
+
+Note that we did not dispose of ```modelpos``` at this point, although we don`t need the variable right now. You may delete it in both
+shaders, if you wish. 
+
+Build and run the changes to see how our cube geometry now has a unique single color applied to every face now.
+
+![The shaders now display the normal information] (_images/Cube02.png)
+
+
+
+
+
+
+
+  
+   
 ##Exercise
  - xxx
