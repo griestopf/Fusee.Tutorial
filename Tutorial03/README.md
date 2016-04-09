@@ -181,41 +181,49 @@ In the vertex shader, remove the ```uniform``` variable ```alpha``` which we use
 variable called ```xform```:
 
 ```C#
-	private const string _vertexShader = @"
-		attribute vec3 fuVertex;
-		attribute vec3 fuNormal;
-		uniform mat4 xform;
-		varying vec3 modelpos;
-		varying vec3 normal;
-		void main()
-		{
-			modelpos = fuVertex;
-			normal = fuNormal;
-			gl_Position = xform * vec4(fuVertex, 1.0);
-		}";
+		private const string _vertexShader = @"
+			attribute vec3 fuVertex;
+			attribute vec3 fuNormal;
+			uniform mat4 xform;
+			varying vec3 modelpos;
+			varying vec3 normal;
+			void main()
+			{
+				modelpos = fuVertex;
+				normal = fuNormal;
+				gl_Position = xform * vec4(fuVertex, 1.0);
+			}";
 ```
 
 Instead of handling ```alpha``` as a shader variable from the 'outside' C# code, we now need to handle ```xform```. Note that we do not completely delete ```_alpha```. Apply the following changes to the C# code:
 
  - Declaration:
    ```C#
-	   private IShaderParam _xformParam;
-	   private float4x4 _xform;
-	   private float _alpha;
+		private IShaderParam _xformParam;
+		private float4x4 _xform;
+		private float _alpha;
    ```
 
  - Inside ```Init()```:
    ```C#
-	   _xformParam = RC.GetShaderParam(shader, "xform");
-	   _xform = float4x4.Identity;
+		if (Mouse.LeftButton || Touch.GetTouchActive(TouchPoints.Touchpoint_0))
+			_alpha -= speed.x * 0.0001f;
+
+		_xformParam = RC.GetShaderParam(shader, "xform");
+		_xform = float4x4.Identity;
    ```
+   Note that we changed the operation on alpha from ```+=``` to ```-=```! This is due to the fact that 
+   from now on we will be using FUSEE`s matrix calculation methods which operate on a left-handed coordinate
+   system instead of a right-handed coordinate system implicitely assumed by OpenGL.
 
  - Inside ```RenderAFrame()```:
    ```C#
-	   _xform = float4x4.CreateRotationY(_alpha) * float4x4.CreateScale(0.5f);
-	   RC.SetShaderParam(_xformParam, _xform);
+		_xform = float4x4.CreateRotationY(_alpha) * float4x4.CreateScale(0.5f);
+		RC.SetShaderParam(_xformParam, _xform);
    ```
 
+###Practice
+ - Understand the changes applied above
 
 
 
