@@ -175,7 +175,7 @@ We don't need to go into maths much deeper now. But you should know now why we o
 although all we want to do is transform some 3D vertices.
    
    
-##Matrix from outside
+##Matrix as Uniform Parameter
 As we know now, we can compose complex transformations from simple "atomic" tranformations like translation, rotation and scale. Instead
 of doing matrix calculations in the vertex shader (where we need the transformation), we compose one single matrix outside the vertex
 shader and then apply that matrix to all incoming vertices belonging to one mesh.
@@ -212,21 +212,21 @@ Instead of handling ```alpha``` as a shader variable from the 'outside' C# code,
 
  - Inside ```Init()```:
    ```C#
-		if (Mouse.LeftButton || Touch.GetTouchActive(TouchPoints.Touchpoint_0))
-			_alpha -= speed.x * 0.0001f;
-
 		_xformParam = RC.GetShaderParam(shader, "xform");
 		_xform = float4x4.Identity;
    ```
-   Note that we changed the operation on alpha from ```+=``` to ```-=```! This is due to the fact that 
-   from now on we will be using FUSEE'`s matrix calculation methods which operate on a left-handed coordinate
-   system instead of a right-handed coordinate system implicitely assumed by OpenGL.
 
  - Inside ```RenderAFrame()```:
    ```C#
+		if (Mouse.LeftButton || Touch.GetTouchActive(TouchPoints.Touchpoint_0))
+			_alpha -= speed.x * 0.0001f;
+
 		_xform = float4x4.CreateRotationY(_alpha) * float4x4.CreateScale(0.5f);
 		RC.SetShaderParam(_xformParam, _xform);
    ```
+   Note that we changed the operation on ```_alpha``` from ```+=``` to ```-=```! This is due to the fact that 
+   from now on we will be using FUSEE'`s matrix calculation methods which operate on a left-handed coordinate
+   system instead of a right-handed coordinate system implicitely assumed by OpenGL.
 
 Build and run these changes and make sure that the output is the same as before.   
    
@@ -271,7 +271,7 @@ Don't worry, you won't have to bother how to setup a matrix that accomplishes th
  3. The *Near Clipping Plane*. Vertices with smaller z values than this will be clipped (not visible).
  4. The *Far Clipping Plane*. Vertices with bigger z values than this will also be clipped (not visible).
  
-Now let's use ```float4x4.CreatePerspectiveFieldOfView```. Change the place in ``RenderAFrame()``` where you assemble your 
+Now let's use ```float4x4.CreatePerspectiveFieldOfView```. Change the place in ```RenderAFrame()``` where you assemble your 
 ```xform```-Matrix:
 
 ```C#
@@ -454,10 +454,11 @@ the overal state so far.
 ##Exercise
  - Create a little robot made out of a base, an upper arm and a forearm. Use two cubes to build the base, and one cube each for 
    upper arm and forearm.
+   ![Sketch of how the robot assignment should look like] (_images/Robot.png)
  - Use the ```Keyboard``` axes to control the yaw of the base and the pitches of upper arm and forearm.
  - Set the arms pivot points to simulate physical joints at the connecting points.
  - Limit the camera pitch movement (```_beta```) to the range from -PI/2 to PI/2.
  - For mobile (touch only) devices: Try to figure out how to best match the five degrees of freedom (Camera pitch and yaw, three robot axes)
-   to the six existing touch axes: Single point speed (2D), Two-Point-Midpoint (2D), Two-Point-Distance (1D), Two-Point-Angle (1D).
+   to the six existing touch axes: Single point speed (2D), Two-Point-Midpoint-Speed (2D), Two-Point-Distance-Speed (1D), Two-Point-Angle-Speed (1D).
    
  
