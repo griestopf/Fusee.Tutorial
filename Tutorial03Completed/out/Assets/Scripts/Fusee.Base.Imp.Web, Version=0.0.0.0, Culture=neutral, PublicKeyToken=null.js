@@ -168,12 +168,18 @@ JSIL.DeclareNamespace("Fusee.Base.Imp.Web");
     return ($S02 = JSIL.Memoize(new JSIL.MethodSignature($asm0D.TypeRef("System.Boolean"), [$asm0D.TypeRef("System.String")]))) ();
   };
   var $S03 = function () {
-    return ($S03 = JSIL.Memoize(new JSIL.ConstructorSignature($asm0D.TypeRef("System.NotImplementedException"), null))) ();
+    return ($S03 = JSIL.Memoize(new JSIL.MethodSignature($asm0D.TypeRef("System.Object"), [$asm0D.TypeRef("System.String"), $asm0D.TypeRef("System.Object")]))) ();
+  };
+  var $S04 = function () {
+    return ($S04 = JSIL.Memoize(new JSIL.MethodSignature($asm0D.TypeRef("System.Boolean"), [$asm0D.TypeRef("System.String")]))) ();
+  };
+  var $S05 = function () {
+    return ($S05 = JSIL.Memoize(new JSIL.ConstructorSignature($asm0D.TypeRef("System.NotImplementedException"), null))) ();
   };
 
 
   function WebAssetProvider__ctor () {
-    var arg_4E_1 = null, arg_74_1 = null;
+    var arg_4E_1 = null, arg_74_1 = null, arg_BB_1 = null, arg_E1_1 = null;
     this._assetHandlers = $S00().Construct();
     var handler = new ($T03())();
     handler.ReturnedType = $T04().__Type__;
@@ -186,10 +192,21 @@ JSIL.DeclareNamespace("Fusee.Base.Imp.Web");
     }
     handler.Checker = arg_74_1;
     this.RegisterTypeHandler(handler.MemberwiseClone());
+    handler = new ($T03())();
+    handler.ReturnedType = $T06().__Type__;
+    if ((arg_BB_1 = $T05().$l$g9__1_2) === null) {
+      arg_BB_1 = $T05().$l$g9__1_2 = $T00().New($T05().$l$g9, null, new JSIL.MethodPointerInfo($asm02.Fusee.Base.Imp.Web.WebAssetProvider_$l$gc, "$l_ctor$gb__1_2", $S03(), false, false));
+    }
+    handler.Decoder = arg_BB_1;
+    if ((arg_E1_1 = $T05().$l$g9__1_3) === null) {
+      arg_E1_1 = $T05().$l$g9__1_3 = $T01().New($T05().$l$g9, null, new JSIL.MethodPointerInfo($asm02.Fusee.Base.Imp.Web.WebAssetProvider_$l$gc, "$l_ctor$gb__1_3", $S04(), false, false));
+    }
+    handler.Checker = arg_E1_1;
+    this.RegisterTypeHandler(handler.MemberwiseClone());
   }; 
 
   function WebAssetProvider_BeginGetAsset (id, getCallback) {
-    throw $S03().Construct();
+    throw $S05().Construct();
   }; 
 
   function WebAssetProvider_CanGet (id, /* ref */ type) {
@@ -330,6 +347,18 @@ JSIL.DeclareNamespace("Fusee.Base.Imp.Web");
   var $T03 = function () {
     return ($T03 = JSIL.Memoize($asm02.Fusee.Base.Imp.Web.WebAssetProvider)) ();
   };
+  var $T04 = function () {
+    return ($T04 = JSIL.Memoize($asm0D.System.IO.StreamReader)) ();
+  };
+  var $T05 = function () {
+    return ($T05 = JSIL.Memoize($asm0D.System.IO.Stream)) ();
+  };
+  var $T06 = function () {
+    return ($T06 = JSIL.Memoize($asm0D.System.IO.TextReader)) ();
+  };
+  var $S00 = function () {
+    return ($S00 = JSIL.Memoize(new JSIL.ConstructorSignature($asm0D.TypeRef("System.IO.StreamReader"), [$asm0D.TypeRef("System.IO.Stream")]))) ();
+  };
 
 
   function $l$gc__ctor () {
@@ -356,6 +385,15 @@ JSIL.DeclareNamespace("Fusee.Base.Imp.Web");
       (a == ".png") || (a == ".bmp"));
   }; 
 
+  function $l$gc_$l_ctor$gb__1_2 (id, storage) {
+    var streamReader = $S00().Construct($T05().$Cast(storage));
+    return streamReader.ReadToEnd();
+  }; 
+
+  function $l$gc_$l_ctor$gb__1_3 (id) {
+    return true;
+  }; 
+
   JSIL.MakeType({
       BaseType: $asm0D.TypeRef("System.Object"), 
       Name: "Fusee.Base.Imp.Web.WebAssetProvider+<>c", 
@@ -380,11 +418,25 @@ JSIL.DeclareNamespace("Fusee.Base.Imp.Web");
       $l$gc_$l_ctor$gb__1_1
     );
 
+    $.Method({Static:false, Public:false}, "$l.ctor$gb__1_2", 
+      new JSIL.MethodSignature($.Object, [$.String, $.Object]), 
+      $l$gc_$l_ctor$gb__1_2
+    );
+
+    $.Method({Static:false, Public:false}, "$l.ctor$gb__1_3", 
+      new JSIL.MethodSignature($.Boolean, [$.String]), 
+      $l$gc_$l_ctor$gb__1_3
+    );
+
     $.Field({Static:true , Public:true , ReadOnly:true }, "$l$g9", $.Type);
 
     $.Field({Static:true , Public:true }, "$l$g9__1_0", $asm00.TypeRef("Fusee.Base.Common.AssetDecoder"));
 
     $.Field({Static:true , Public:true }, "$l$g9__1_1", $asm00.TypeRef("Fusee.Base.Common.AssetChecker"));
+
+    $.Field({Static:true , Public:true }, "$l$g9__1_2", $asm00.TypeRef("Fusee.Base.Common.AssetDecoder"));
+
+    $.Field({Static:true , Public:true }, "$l$g9__1_3", $asm00.TypeRef("Fusee.Base.Common.AssetChecker"));
 
 
     function $l$gc__cctor () {
