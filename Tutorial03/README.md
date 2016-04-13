@@ -449,7 +449,7 @@ both bars using the arrow keys.
 ![Arm example] (_images/Arms.png)
  
 See [Tutorial.cs] (../Tutorial03Completed/Core/Tutorial.cs) int the [Tutorial03 Completed] (../Tutorial03Completed) folder for 
-the overal state so far.
+the overall state so far.
    
 ##Exercise
  - Create a little robot made out of a base, an upper arm and a forearm. Use two cubes to build the base, and one cube each for 
