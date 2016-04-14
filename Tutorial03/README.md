@@ -449,7 +449,8 @@ both bars using the arrow keys.
 ![Arm example] (_images/Arms.png)
 
  - Visit the [result as web application]
-  (https://cdn.rawgit.com/griestopf/Fusee.Tutorial/2c0750f/Tutorial03Completed/out/Fusee.Tutorial.Web.html) (Ctrl-Click to open in new tab).
+  (https://cdn.rawgit.com/griestopf/Fusee.Tutorial/2c0750f/Tutorial03Completed/out/Fusee.Tutorial.Web.html)
+  (Ctrl-Click or Long-Press to open in new tab).
  
  - See [Tutorial.cs] (../Tutorial03Completed/Core/Tutorial.cs) int the [Tutorial03 Completed] (../Tutorial03Completed) folder for 
    the overall state so far.

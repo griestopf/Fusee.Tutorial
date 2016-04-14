@@ -116,6 +116,13 @@ Note how the pixel shader does nothing but copy the incoming vertex (`fuVertex`)
  - Compile and run the program for your favorite platform. A magenta colored triangle should fill the green background.
  
     ![Result](_images/Tut01Result.png)
+	
+ - Visit the
+   [result as web application] (https://cdn.rawgit.com/griestopf/Fusee.Tutorial/5658a54/Tutorial01Completed/out/Fusee.Tutorial.Web.html)
+   (Ctrl-Click or Long-Press to open in new tab).
+ 
+ - See [Tutorial.cs] (../Tutorial01Completed/Core/Tutorial.cs) int the [Tutorial01 Completed] (../Tutorial01Completed) folder for 
+   the overall state so far.	
 
 ##Exercise/Questions
 Investigate how the vertice's coordinates relate to pixel positions within the output window.
