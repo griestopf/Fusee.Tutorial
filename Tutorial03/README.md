@@ -452,7 +452,7 @@ both bars using the arrow keys.
   (https://cdn.rawgit.com/griestopf/Fusee.Tutorial/2c0750f/Tutorial03Completed/out/Fusee.Tutorial.Web.html)
   (Ctrl-Click or Long-Press to open in new tab).
  
- - See [Tutorial.cs] (../Tutorial03Completed/Core/Tutorial.cs) int the [Tutorial03 Completed] (../Tutorial03Completed) folder for 
+ - See [Tutorial.cs] (../Tutorial03Completed/Core/Tutorial.cs) in the [Tutorial03 Completed] (../Tutorial03Completed) folder for 
    the overall state so far.
    
 ##Exercise

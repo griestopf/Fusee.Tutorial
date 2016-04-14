@@ -121,7 +121,7 @@ Note how the pixel shader does nothing but copy the incoming vertex (`fuVertex`)
    [result as web application] (https://cdn.rawgit.com/griestopf/Fusee.Tutorial/5658a54/Tutorial01Completed/out/Fusee.Tutorial.Web.html)
    (Ctrl-Click or Long-Press to open in new tab).
  
- - See [Tutorial.cs] (../Tutorial01Completed/Core/Tutorial.cs) int the [Tutorial01 Completed] (../Tutorial01Completed) folder for 
+ - See [Tutorial.cs] (../Tutorial01Completed/Core/Tutorial.cs) in the [Tutorial01 Completed] (../Tutorial01Completed) folder for 
    the overall state so far.	
 
 ##Exercise/Questions
