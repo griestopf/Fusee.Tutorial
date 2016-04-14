@@ -231,7 +231,7 @@ Building and running this will give you interactive control over the rotation an
 
  - Visit the
    [result as web application] (https://cdn.rawgit.com/griestopf/Fusee.Tutorial/5658a54/Tutorial02Completed/out/Fusee.Tutorial.Web.html)
-   (Ctrl-Click or Long-Press to open in new tab)
+   (Ctrl-Click or Long-Press to open in new tab).
  
  - See [Tutorial.cs] (../Tutorial02Completed/Core/Tutorial.cs) int the [Tutorial01 Completed] (../Tutorial02Completed) folder for 
    the overall state so far.	
