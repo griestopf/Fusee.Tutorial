@@ -89,13 +89,20 @@ or ```uniform vec4 FUSEE_P;``` and read out the values currently set from CPU-Co
 versions of *ModelView* and *Projection* as well as inverted or transposed versions of all kinds of combinations of 
 the above. In particular, the following matrices are available
 
- CPU-Code Name               | CPU-Code Access  | Shader-Code Declaration         |   Description  
------------------------------|------------------|---------------------------------|---------------------------------------------------------------   
- `RC.ModelView`              | Read/Write       | `uniform vec4 FUSEE_MV`         | The Model-View matrix transforming from model to camera space.
- `RC.Projection`             | Read/Write       | `uniform vec4 FUSEE_P`          | The Projection matrix transforming from camera to clip space.
- `RC.ModelViewProjection`    | Read             | `uniform vec4 FUSEE_MVP`        | The combined (multiplied) result of `MV*P`
- 
-
+ CPU-Code Name                    | CPU-Code Access | Shader-Code Declaration    |   Description  
+----------------------------------|-----------------|----------------------------|---------------------------------------------------------------   
+ `RC.ModelView`                   | Read/Write      | `uniform vec4 FUSEE_MV`    | The Model-View matrix transforming from model to camera space.
+ `RC.Projection`                  | Read/Write      | `uniform vec4 FUSEE_P`     | The Projection matrix transforming from camera to clip space.
+ `RC.ModelViewProjection`         | Read            | `uniform vec4 FUSEE_MVP`   | The combined (multiplied) result of `MV*P`
+ `RC.InvModelView`                | Read            | `uniform vec4 FUSEE_IMV`   | The inverted Model-View matrix transforming from camera to model space.
+ `RC.InvProjection`               | Read            | `uniform vec4 FUSEE_IP`    | The inverted Projection matrix transforming from clip to camera space.
+ `RC.InvModelViewProjection`      | Read            | `uniform vec4 FUSEE_IMVP`  | `Invert(MV*P)`
+ `RC.TransModelView`              | Read            | `uniform vec4 FUSEE_TMV`   | The transposed Model-View matrix.
+ `RC.TransProjection`             | Read            | `uniform vec4 FUSEE_TP`    | The trasposed Projection matrix.
+ `RC.TransModelViewProjection`    | Read            | `uniform vec4 FUSEE_TMVP`  | `Transpsoe(MV*P)`
+ `RC.InvTransModelView`           | Read            | `uniform vec4 FUSEE_ITMV`  | The inverted transposed Model-View matrix.
+ `RC.InvTransProjection`          | Read            | `uniform vec4 FUSEE_ITP`   | The inverted trasposed Projection matrix.
+ `RC.InvTransModelViewProjection` | Read            | `uniform vec4 FUSEE_ITMVP` | `Invert(Transpsoe(MV*P))`
 
 Now let's apply further changes to the current state. Inside ```RenderAFrame()```:
  1. Completely Remove the second of the two cubes from the scene.
