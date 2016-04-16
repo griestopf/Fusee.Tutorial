@@ -14,7 +14,7 @@ in the FUSEE file forman (*.fus).
 Open the Tutorial 04 project and build it on your preferred platform (Desktop, Android or Web). Running 
 the result will show more or less the state where we left off at [Tutorial 03] (../Tutorial03):
 
-![Tutorial 04 in its initial state] (Tutorial04Start.png)
+![Tutorial 04 in its initial state] (_images/Tutorial04Start.png)
 
 The only visible change is that the background color changed from dark green to white. But let's look under the hood. Open
 [Tutorial.cs] (Core/Tutorial.cs) and look at the first lines of the ```Init()``` method:
@@ -51,12 +51,14 @@ other *.fus files). To make any file below the ```Core/Assets``` folder to be an
 you access to it throgh the ```AssetStorage```, you need to do two things (already done for ```Cube.fus```):
 
  1. Include it in the ```Assets``` folder in Visual Studio's Solution Exporer
-    ![Cube.fus in Solution Explorer] (CubeInSolution.png)
+ 
+    ![Cube.fus in Solution Explorer] (_images/CubeInSolution.png)
    
  2. Set the asset file's properties in Visual Studion like so:
 	- ```Build Action``` must be ```Content```
 	- ```Copy to Output Directory``` must be ```Copy if newer```
-    ![Cube.fus in Properties Editor] (CubeProperties.png)
+	
+    ![Cube.fus in Properties Editor] (_images/CubeProperties.png)
 	
 Any file listed this way in the ```Core``` projects's ```Asset``` folder will be added as an asset to the resulting application
 on the respective platform (Desktop: .exe file; Android: apk package; Web: html-file and subfolder structure). All assets added
