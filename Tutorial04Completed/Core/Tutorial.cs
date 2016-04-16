@@ -18,14 +18,14 @@ namespace Fusee.Tutorial.Core
         private const string _vertexShader = @"
             attribute vec3 fuVertex;
             attribute vec3 fuNormal;
-            uniform mat4 xform;
+            uniform mat4 FUSEE_MVP;
             varying vec3 modelpos;
             varying vec3 normal;
             void main()
             {
                 modelpos = fuVertex;
                 normal = fuNormal;
-                gl_Position = xform * vec4(fuVertex, 1.0);
+                gl_Position = FUSEE_MVP * vec4(fuVertex, 1.0);
             }";
 
         private const string _pixelShader = @"
@@ -41,8 +41,8 @@ namespace Fusee.Tutorial.Core
             }";
 
 
-        private IShaderParam _xformParam;
-        private float4x4 _xform;
+        // private IShaderParam _xformParam;
+        // private float4x4 _xform;
         private float _alpha;
         private float _beta;
 
@@ -71,8 +71,8 @@ namespace Fusee.Tutorial.Core
 
             var shader = RC.CreateShader(_vertexShader, _pixelShader);
             RC.SetShader(shader);
-            _xformParam = RC.GetShaderParam(shader, "xform");
-            _xform = float4x4.Identity;
+            // _xformParam = RC.GetShaderParam(shader, "xform");
+            // _xform = float4x4.Identity;
 
             // Set the clear color for the backbuffer
             RC.ClearColor = new float4(1, 1, 1, 1);
@@ -107,13 +107,12 @@ namespace Fusee.Tutorial.Core
 
             // Setup matrices
             var aspectRatio = Width / (float)Height;
-            var projection = float4x4.CreatePerspectiveFieldOfView(3.141592f * 0.25f, aspectRatio, 0.01f, 20);
+            RC.Projection = float4x4.CreatePerspectiveFieldOfView(3.141592f * 0.25f, aspectRatio, 0.01f, 20);
             var view = float4x4.CreateTranslation(0, 0, 3)*float4x4.CreateRotationY(_alpha)*float4x4.CreateRotationX(_beta);
 
             // First cube
             var cube1Model = ModelXForm(new float3(-0.5f, 0, 0), new float3(_pitchCube1, _yawCube1, 0), new float3(0, 0, 0));
-            _xform = projection*view*cube1Model * float4x4.CreateScale(0.5f, 0.5f, 0.5f);
-            RC.SetShaderParam(_xformParam, _xform);
+            RC.ModelView = view*cube1Model * float4x4.CreateScale(0.5f, 0.5f, 0.5f);
             RC.Render(_mesh);
 
             // Swap buffers: Show the contents of the backbuffer (containing the currently rendered farame) on the front buffer.

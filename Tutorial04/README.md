@@ -76,6 +76,27 @@ To conclude the changes applied to the completed state of Tutorial 03 to in orde
 should be mentioned that the namespaces ```Fusee.Serialization``` and  ```Fusee.Xene``` were announced with ```using``` statements
 at the top of the source code file.
 
+#Use FUSEE's Standard Matrices
+Instead of using our self-defined ```_xform``` we can use a set of matrices which are maintained by FUSEE's render 
+context (```RC```) and automatically propagated from the main application running on the CPU to the vertex shader 
+on the GPU. The two commonly used matrices here are the **ModelView** and the **Projection** matrices.
+
+From the CPU-Code (e.g. from inside ```RenderAFrame```) you can access (typically write) these two matrices using
+the ```RC.ModelView``` and the ```RC.Projection``` properties. These are defind as ```float4x4``` properties - the 
+FUSEE standard type for matrices.  From within your shader code, you can access these matrices by defining ```uniform```
+properties with special names. Here you can, for example, declare variables like ```uniform vec4 FUSEE_MV;``` 
+or ```uniform vec4 FUSEE_P;``` and read out the values currently set from CPU-Code. You can also access premultiplied 
+versions of *ModelView* and *Projection* as well as inverted or transposed versions of all kinds of combinations of 
+the above. In particular, the following matrices are available
+
+ CPU-Code Name               | CPU-Code Access  | Shader-Code Declaration         |   Description  
+-----------------------------|------------------|---------------------------------|---------------------------------------------------------------   
+ `RC.ModelView`              | Read/Write       | `uniform vec4 FUSEE_MV`         | The Model-View matrix transforming from model to camera space.
+ `RC.Projection`             | Read/Write       | `uniform vec4 FUSEE_P`          | The Projection matrix transforming from camera to clip space.
+ `RC.ModelViewProjection`    | Read             | `uniform vec4 FUSEE_MVP`        | The combined (multiplied) result of `MV*P`
+ 
+
+
 Now let's apply further changes to the current state. Inside ```RenderAFrame()```:
  1. Completely Remove the second of the two cubes from the scene.
  2. Apply a uniform scale to the first cube of 0.5 along all three axes.
@@ -106,7 +127,7 @@ Make sure the file ```Cylinder.fus``` is loaded into the ```_mesh``` and the res
 
 ![Cylinder with flat and faded color surfaces] (_images/CylinderColors.png)
 
-Now let's answer the last question of the practice block above: As you remember from [Tutorial 03] (../Tutorial03), there's one single
+Now let's answer the last question of the practice block above: As you remember from [Tutorial 03] (../Tutorial03#normals), there's one single
 normal present at each vertex of every triangle. The curved coating surface of the cylinder is made up of individual triangles as well. 
 But instead of copying each vertex as many times as there are triangles hung up on that vertex, all vertices on curved surfaces are
 present only once. In addition each vertex along a curved surface gets assigned a normal that's calculated as the mean of the triangle
@@ -114,14 +135,16 @@ normals meeting at that vertex. Take a look at the following image:
 
 ![Cylinder with vertices, faces and normals] (_images/CylinderPolysVertsNormals.png)
 
-Note that the purple top surface normals have exactly the same direction as the top surface normal itself would have. This does not hold for 
-the orange/yellow/green normals at the rims of the coating surface. These normals are each somewhat half way between the normals that 
-would be present on the rectangles that build up the coating surface.
+Note that the purple top vertex normals have exactly the same direction as the top surface normal itself would have. This does not hold for 
+the orange/yellow/green vertex normals at the rims of the coating surface. These normals are each somewhat half way between the normals that 
+would be present on the respective two neighboring rectangles that build up the coating surface.
 
 On each vertex you see the normals present at that vertex. If a vertex has more than one normal (as seen on the top rim of the cylinder),
-then the vertex is present multiple times in the vertex list as the Cube from [Tutorial 03] (../Tutorial03). The normal colors represent
+then the vertex is present multiple times in the vertex list as seen on the cube from [Tutorial 03] (../Tutorial03#normals). These vertex 
+normals are given in the file ```Cylinder.fus```, from there they are copied to the ```_mesh``` and then are passed into ```fuNormal```
+when the ```_mesh``` gets rendered. The normal colors represent
 directions: Normals with the same color look into the same direction. The normals at the vertices are passed to the vertex shader just
-as they ar shown here. Our vertex shader simply passes through the normals to the pixel shader:
+as they are shown here. Our vertex shader simply passes through the normals to the pixel shader:
 
 ```C#
 	normal = fuNormal;
