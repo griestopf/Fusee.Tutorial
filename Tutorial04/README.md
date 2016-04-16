@@ -104,6 +104,12 @@ Here's the resulting code:
 ##Lighting calculation basics
 Make sure the file ```Cylinder.fus``` is loaded into the ```_mesh``` and the result looks like this:
 
+![Cylinder with flat and faded color surfaces] (_images/CylinderColors.png)
+
+Now let's answer the last question of the practice block above: As you remember from [Tutorial 03] (../Tutorial03), there's one single
+normal present at each vertex of every triangle. The curved coating surface of the cylinder is made up of individual triangles as well. 
+But instead of assigning normals to the three 
+
 
    
    
