@@ -5,6 +5,7 @@
  - Understand why we need 4x4 matrices (and not 3x3) to perform transformations.
  - Grasp the indexing scheme in `Mesh` and how edges in geometry require that vertices
    are passed through the vertex shader more than once.
+ - Get a first glance how object hierarchies are built using composite transformations
  
 ##Get that 3D Look
 In the tutorials so far the generated output looked rather flat. Even the 3D-tetrahedron in [Tutorial 02] (../Tutorial02) really looked rather
