@@ -83,11 +83,11 @@ Now let's apply further changes to the current state. Inside ```RenderAFrame()``
 Here's the resulting code:
 
 ```C#
-		// First cube
-		var cube1Model = ModelXForm(new float3(-0.5f, 0, 0), new float3(_pitchCube1, _yawCube1, 0), new float3(0, 0, 0));
-		_xform = projection*view*cube1Model * float4x4.CreateScale(0.5f, 0.5f, 0.5f);
-		RC.SetShaderParam(_xformParam, _xform);
-		RC.Render(_mesh); 
+	// First cube
+	var cube1Model = ModelXForm(new float3(-0.5f, 0, 0), new float3(_pitchCube1, _yawCube1, 0), new float3(0, 0, 0));
+	_xform = projection*view*cube1Model * float4x4.CreateScale(0.5f, 0.5f, 0.5f);
+	RC.SetShaderParam(_xformParam, _xform);
+	RC.Render(_mesh); 
 ```
 
  
@@ -108,20 +108,38 @@ Make sure the file ```Cylinder.fus``` is loaded into the ```_mesh``` and the res
 
 Now let's answer the last question of the practice block above: As you remember from [Tutorial 03] (../Tutorial03), there's one single
 normal present at each vertex of every triangle. The curved coating surface of the cylinder is made up of individual triangles as well. 
-But instead of copying each surface as many times as there are triangles hung up on that vertex, all vertices on curved surfaces are
+But instead of copying each vertex as many times as there are triangles hung up on that vertex, all vertices on curved surfaces are
 present only once. In addition each vertex along a curved surface gets assigned a normal that's calculated as the mean of the triangle
 normals meeting at that vertex. Take a look at the following image:
 
 ![Cylinder with vertices, faces and normals] (_images/CylinderPolysVertsNormals.png)
 
+Note that the purple top surface normals have exactly the same direction as the top surface normal itself would have. This does not hold for 
+the orange/yellow/green normals at the rims of the coating surface. These normals are each somewhat half way between the normals that 
+would be present on the rectangles that build up the coating surface.
+
 On each vertex you see the normals present at that vertex. If a vertex has more than one normal (as seen on the top rim of the cylinder),
 then the vertex is present multiple times in the vertex list as the Cube from [Tutorial 03] (../Tutorial03). The normal colors represent
 directions: Normals with the same color look into the same direction. The normals at the vertices are passed to the vertex shader just
-as they ar shown here. Our vertex shader simply passes through the normals to the pixel shader (```normal = fuNormal;```). Since ```normal```
-is a ```varying``` variable their values are interpolated when arriving at the pixel shader. In the image above you can see six pixels
-for which the pixel shader is called. In each of these six calls, the value of ```normal``` is different because each pixel's positon is
-different from the other in respect to the positions (and thus the normals) of the surronding vertices. That's why each pixel is 
-given a different color.
+as they ar shown here. Our vertex shader simply passes through the normals to the pixel shader:
+
+```C#
+	normal = fuNormal;
+```
+
+Since ```normal``` is a ```varying``` variable their values are interpolated when arriving at the pixel shader. 
+In the image above you can see six pixels for which the pixel shader is called. In each of these six calls, 
+the value of ```normal``` is different because each pixel's positon is different from the others with respect to 
+the positions (and thus the normals) of the surronding vertices. Since in our pixel shader we directly interpret
+the normals as colors
+
+```C#
+	gl_FragColor = vec4(normal*0.5 + 0.5, 1);
+```
+
+we're ending up with each pixel given a different color.
+
+We we want to change this by calculating 
 
 
 
