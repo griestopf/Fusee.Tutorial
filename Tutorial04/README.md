@@ -101,14 +101,31 @@ Here's the resulting code:
    the rendering pipeline with your vertex and pixel shader assign one single color to the circular bottom (and probably top) faces
    while giving each pixel of the curved coating surface an individual color changing from pixel to pixel. 
  
-##Lighting calculation basics
+##A Very Basic Lighting Calculation
 Make sure the file ```Cylinder.fus``` is loaded into the ```_mesh``` and the result looks like this:
 
 ![Cylinder with flat and faded color surfaces] (_images/CylinderColors.png)
 
 Now let's answer the last question of the practice block above: As you remember from [Tutorial 03] (../Tutorial03), there's one single
 normal present at each vertex of every triangle. The curved coating surface of the cylinder is made up of individual triangles as well. 
-But instead of assigning normals to the three 
+But instead of copying each surface as many times as there are triangles hung up on that vertex, all vertices on curved surfaces are
+present only once. In addition each vertex along a curved surface gets assigned a normal that's calculated as the mean of the triangle
+normals meeting at that vertex. Take a look at the following image:
+
+![Cylinder with vertices, faces and normals] (_images/CylinderPolysVertsNormals.png)
+
+On each vertex you see the normals present at that vertex. If a vertex has more than one normal (as seen on the top rim of the cylinder),
+then the vertex is present multiple times in the vertex list as the Cube from [Tutorial 03] (../Tutorial03). The normal colors represent
+directions: Normals with the same color look into the same direction. The normals at the vertices are passed to the vertex shader just
+as they ar shown here. Our vertex shader simply passes through the normals to the pixel shader (```normal = fuNormal;```). Since ```normal```
+is a ```varying``` variable their values are interpolated when arriving at the pixel shader. In the image above you can see six pixels
+for which the pixel shader is called. In each of these six calls, the value of ```normal``` is different because each pixel's positon is
+different from the other in respect to the positions (and thus the normals) of the surronding vertices. That's why each pixel is 
+given a different color.
+
+
+
+
 
 
    
