@@ -55,7 +55,7 @@ namespace Fusee.Tutorial.Core
         public override void Init()
         {
             // Load the scene file "Cube.fus"
-            SceneContainer sc = AssetStorage.Get<SceneContainer>("Cube.fus");
+            SceneContainer sc = AssetStorage.Get<SceneContainer>("Cylinder.fus");
             
             // Extract the 'First' object of type 'MeshComponent' found in 'sc'`s list of 'Children' without 
             // further specifying any search criterion ('c => true' means: any found MeshComponent will do).
@@ -112,13 +112,7 @@ namespace Fusee.Tutorial.Core
 
             // First cube
             var cube1Model = ModelXForm(new float3(-0.5f, 0, 0), new float3(_pitchCube1, _yawCube1, 0), new float3(0, 0, 0));
-            _xform = projection * view * cube1Model * float4x4.CreateScale(0.5f, 0.1f, 0.1f);
-            RC.SetShaderParam(_xformParam, _xform);
-            RC.Render(_mesh);
-
-            // Second cube
-            var cube2Model = ModelXForm(new float3(1, 0, 0), new float3(_pitchCube2, _yawCube2, 0), new float3(-0.5f, 0, 0));
-            _xform = projection * view * cube1Model * cube2Model * float4x4.CreateScale(0.5f, 0.1f, 0.1f);
+            _xform = projection*view*cube1Model * float4x4.CreateScale(0.5f, 0.5f, 0.5f);
             RC.SetShaderParam(_xformParam, _xform);
             RC.Render(_mesh);
 
