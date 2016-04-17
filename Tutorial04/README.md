@@ -2,14 +2,15 @@
 
 ##Goals
  - Learn to load 3D models as assets.
- - Understand Fusee's bilt-in ModelView and Projection matrices.
- - See how hierachicak geometry can be handled in object hierarchies.
+ - Understand Fusee's built-in ModelView and Projection matrices.
+ - See how hierachical geometry can be handled in object hierarchies.
  - Implement a very simple lighting calculation in the pixel shader.
  
-##Meshes from files
-FUSEE comes with a set of classes designed to be written to and loaded from files (seralized). These classes are containers for data types typically found in 3D scenes, such as polygonal geometry, material (color) 
+##Reading Meshes From Files
+FUSEE comes with a set of classes designed to be written to and loaded from files (serialized). These classes are 
+containers for data types typically found in 3D scenes, such as polygonal geometry, material (color) 
 settings, textures, and hierarchies. In this tutorial we will only look at how to read mesh geometry from files
-in the FUSEE file forman (*.fus).
+in the FUSEE file format (*.fus).
 
 Open the Tutorial 04 project and build it on your preferred platform (Desktop, Android or Web). Running 
 the result will show more or less the state where we left off at [Tutorial 03] (../Tutorial03):
@@ -41,8 +42,8 @@ Open [Tutorial.cs] (Core/Tutorial.cs) and look at the first lines of the ```Init
 		...
 ```
 
-Notice that the explicit definition of the cube geometry, where every of the 24 vertices and 24 normals were listed
-together with the 12 triangles making up the cube is no longer there. We still have the ```_mesh``` field instantiated 
+You may notice that the explicit definition of the cube geometry, where every of the 24 vertices and 24 normals were listed
+together with the 12 triangles making up the cube, is no longer there. We still have the ```_mesh``` field instantiated 
 with a ```Mesh``` object but the ```Vertices```, ```Normals``` and ```Triangles``` arrays are now taken from some 
 object ```mc``` which is of type ```MeshComponent```.
 
@@ -76,9 +77,9 @@ To conclude the changes applied to the completed state of Tutorial 03 to in orde
 should be mentioned that the namespaces ```Fusee.Serialization``` and  ```Fusee.Xene``` were announced with ```using``` statements
 at the top of the source code file.
 
-#Use FUSEE's Standard Matrices
-Instead of using our self-defined ```_xform``` we can use a set of matrices which are maintained by FUSEE's render 
-context (```RC```) and automatically propagated from the main application running on the CPU to the vertex shader 
+##Using FUSEE's Standard Matrices
+Instead of using our self-defined `_xform` we can use a set of matrices which are maintained by FUSEE's render 
+context (`RC`) and automatically propagated from the main application running on the CPU to the vertex shader 
 on the GPU. The two commonly used matrices here are the **ModelView** and the **Projection** matrices.
 
 From the CPU-Code (e.g. from inside ```RenderAFrame```) you can access (typically write) these two matrices using
@@ -98,12 +99,65 @@ the above. In particular, the following matrices are available
  `RC.InvProjection`               | Read            | `uniform vec4 FUSEE_IP`    | The inverted Projection matrix transforming from clip to camera space.
  `RC.InvModelViewProjection`      | Read            | `uniform vec4 FUSEE_IMVP`  | `Invert(MV*P)`
  `RC.TransModelView`              | Read            | `uniform vec4 FUSEE_TMV`   | The transposed Model-View matrix.
- `RC.TransProjection`             | Read            | `uniform vec4 FUSEE_TP`    | The trasposed Projection matrix.
+ `RC.TransProjection`             | Read            | `uniform vec4 FUSEE_TP`    | The transposed Projection matrix.
  `RC.TransModelViewProjection`    | Read            | `uniform vec4 FUSEE_TMVP`  | `Transpsoe(MV*P)`
  `RC.InvTransModelView`           | Read            | `uniform vec4 FUSEE_ITMV`  | The inverted transposed Model-View matrix.
  `RC.InvTransProjection`          | Read            | `uniform vec4 FUSEE_ITP`   | The inverted trasposed Projection matrix.
  `RC.InvTransModelViewProjection` | Read            | `uniform vec4 FUSEE_ITMVP` | `Invert(Transpsoe(MV*P))`
+ 
+Quite a lot - but keep in mind that theses matrices are the vehicles that bring coordinates back and forth through the various 
+steps taken by geometry when transformed from model coordinates into clip coordinates. In upcoming tutorials we will see a number
+of examples where some of the above matrices will be used. In this tutorial we will only write to 
+`RC.ModelView` and to `RC.Projection` from within `RenderAFrame()` and read the product of both 
+in the vertex shader out of `uniform vec4 FUSEE_MVP`. To do this follow these steps:
 
+ - Inside the vertex shader simply replace the text `xform` with the text `FUSEE_MVP`:
+
+   ```C#
+		private Mesh _mesh;
+		private const string _vertexShader = @"
+			attribute vec3 fuVertex;
+			attribute vec3 fuNormal;
+			uniform mat4 FUSEE_MVP;
+			varying vec3 modelpos;
+			varying vec3 normal;
+			void main()
+			{
+				modelpos = fuVertex;
+				normal = fuNormal;
+				gl_Position = FUSEE_MVP * vec4(fuVertex, 1.0);
+			}";
+   ```
+
+ - On the class level, you can completely remove the declaration of the fields `private IShaderParam _xformParam;` and
+   `private float4x4 _xform;`. Just delete them.
+
+ - Inside `Init()` completely remove the initialization of `_xformParam` and `_xform`. 
+ 
+ - Inside `RenderAFrame()` assign the calculation result for the projection matrix directly to `RC.Projection`. Remove the local 
+   variable `projection:
+   ```C#
+      RC.Projection = float4x4.CreatePerspectiveFieldOfView(3.141592f * 0.25f, aspectRatio, 0.01f, 20);
+   ```
+  
+ - In the *two* `_xform` matrix setup lines before the *two* `RC.Render(_mesh);` replace `_xform` with `RC.ModelView` and omit
+   the `projection` matrix from the calculation, since it's already set. Here's the first of the *two* calls:
+   ```C#
+   RC.ModelView = view *  cube1Model * float4x4.CreateScale(0.5f, 0.1f, 0.1f);
+   ``` 
+ - At both places delete the `RC.SetShaderParam(_xformParam, _xform);` line below since FUSEE takes care of passing the contents  
+   of `RC.ModelView` up to the vertex shader.
+
+As a result, the application should build and run with no visible changes. So why did we do that? There are a number of 
+advantages in using these pre-defined matrices over our first approach using our self-defined `_xform`:
+ 1. Shader code is re-usable using the above conventions. Otherwise the CPU-Code needs to be adapted to the shader code to set these
+    bread-and-butter states.
+ 2. FUSEE automatically keeps these values actual on the CPU-Side. Multiplications, inversions and transpositions are only calculated
+    once unless any of the writable matrices is updated. Calculations also only take place if a certain matrix is read from.
+ 3. FUSEE checks shader code if any of the above matrices are declared as `uniform` variables and only calculates/propagates the
+    matrices needed by a shader. 
+ 4. When replacing the current shader during rendering, FUSEE automatically updates any of the above 
+ 
 Now let's apply further changes to the current state. Inside ```RenderAFrame()```:
  1. Completely Remove the second of the two cubes from the scene.
  2. Apply a uniform scale to the first cube of 0.5 along all three axes.
