@@ -19,12 +19,13 @@ namespace Fusee.Tutorial.Core
             attribute vec3 fuVertex;
             attribute vec3 fuNormal;
             uniform mat4 FUSEE_MVP;
+            uniform mat4 FUSEE_MV;
             varying vec3 modelpos;
             varying vec3 normal;
             void main()
             {
                 modelpos = fuVertex;
-                normal = fuNormal;
+                normal = normalize(mat3(FUSEE_MV) * fuNormal);
                 gl_Position = FUSEE_MVP * vec4(fuVertex, 1.0);
             }";
 
@@ -37,7 +38,8 @@ namespace Fusee.Tutorial.Core
 
             void main()
             {
-                gl_FragColor = vec4(normal*0.5 + 0.5, 1);
+                float intensity = dot(normal, vec3(0, 0, -1));
+                gl_FragColor = vec4(intensity, intensity, intensity, 1);
             }";
 
 

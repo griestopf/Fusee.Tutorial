@@ -108,10 +108,10 @@ the above. In particular, the following matrices are available
 Quite a lot - but keep in mind that theses matrices are the vehicles that bring coordinates back and forth through the various 
 steps taken by geometry when transformed from model coordinates into clip coordinates. In upcoming tutorials we will see a number
 of examples where some of the above matrices will be used. In this tutorial we will only write to 
-`RC.ModelView` and to `RC.Projection` from within `RenderAFrame()` and read the product of both 
+`RC.ModelView` and to `RC.Projection` from within `RenderAFrame()` and the product of ModelView and Projection 
 in the vertex shader out of `uniform vec4 FUSEE_MVP`. To do this follow these steps:
 
- - Inside the vertex shader simply replace the text `xform` with the text `FUSEE_MVP`:
+ - Inside the vertex shader simply replace the identifyer `xform` with `FUSEE_MVP`:
 
    ```C#
 		private Mesh _mesh;
@@ -135,7 +135,7 @@ in the vertex shader out of `uniform vec4 FUSEE_MVP`. To do this follow these st
  - Inside `Init()` completely remove the initialization of `_xformParam` and `_xform`. 
  
  - Inside `RenderAFrame()` assign the calculation result for the projection matrix directly to `RC.Projection`. Remove the local 
-   variable `projection:
+   variable `projection`:
    ```C#
       RC.Projection = float4x4.CreatePerspectiveFieldOfView(3.141592f * 0.25f, aspectRatio, 0.01f, 20);
    ```
@@ -145,8 +145,8 @@ in the vertex shader out of `uniform vec4 FUSEE_MVP`. To do this follow these st
    ```C#
    RC.ModelView = view *  cube1Model * float4x4.CreateScale(0.5f, 0.1f, 0.1f);
    ``` 
- - At both places delete the `RC.SetShaderParam(_xformParam, _xform);` line below since FUSEE takes care of passing the contents  
-   of `RC.ModelView` up to the vertex shader.
+ - At both places delete the `RC.SetShaderParam(_xformParam, _xform);` line below since FUSEE takes care of passing the contents of 
+   `RC.ModelView` up to the vertex shader.
 
 As a result, the application should build and run with no visible changes. So why did we do that? There are a number of 
 advantages in using these pre-defined matrices over our first approach using our self-defined `_xform`:
@@ -156,7 +156,8 @@ advantages in using these pre-defined matrices over our first approach using our
     once unless any of the writable matrices is updated. Calculations also only take place if a certain matrix is read from.
  3. FUSEE checks shader code if any of the above matrices are declared as `uniform` variables and only calculates/propagates the
     matrices needed by a shader. 
- 4. When replacing the current shader during rendering, FUSEE automatically updates any of the above 
+ 4. When replacing the current shader during rendering, FUSEE automatically updates any of the matrices above. No need to call
+    `RC.SetShaderParam` after each shader change.
  
 Now let's apply further changes to the current state. Inside ```RenderAFrame()```:
  1. Completely Remove the second of the two cubes from the scene.
@@ -166,12 +167,10 @@ Here's the resulting code:
 
 ```C#
 	// First cube
-	var cube1Model = ModelXForm(new float3(-0.5f, 0, 0), new float3(_pitchCube1, _yawCube1, 0), new float3(0, 0, 0));
-	_xform = projection*view*cube1Model * float4x4.CreateScale(0.5f, 0.5f, 0.5f);
-	RC.SetShaderParam(_xformParam, _xform);
-	RC.Render(_mesh); 
+    var cube1Model = ModelXForm(new float3(-0.5f, 0, 0), new float3(_pitchCube1, _yawCube1, 0), new float3(0, 0, 0));
+    RC.ModelView = view*cube1Model * float4x4.CreateScale(0.5f, 0.5f, 0.5f);
+    RC.Render(_mesh);
 ```
-
  
 ###Practice
  - Get a grasp of the contents of a .fus file: Set a breakpoint AFTER (!!!) the first, the second and the third instruction of
@@ -223,7 +222,68 @@ the normals as colors
 
 we're ending up with each pixel given a different color.
 
-We we want to change this by calculating 
+We we want to change this by applying a more sophisticated color calculation taking the normal into account. Imagine we
+had a light source emitting parallel light into the viewing direction of the camera looking at the scene. 
+Surfaces that are oriented towards the camera`s viewing direction (and thus the light rays) will be lit more intensive than surfaces 
+facing away from the camera.
+
+
+Take a look at the image below. You can see the camera and the view coordinate system. The blue coordinate axis is the z-axis of the view
+coordinate system and this is also the direction of all light rays. There are three example positions on the cylinder where an 
+intensity should be calculated. The normals at these example positions are given and also the opposite light ray direction in blue. Imagine
+the opposite light ray direction as the "direction towards the light source". In short we will call this opposite light ray direction just
+the *light direction*. Now you can see that the intensity (how light it is) at a given point depends on how close the normal vector at that point
+is to the light direction:
+
+![Simple Lighting Model] (_images/LightingSimple.png)
+
+In view coordinates (the coordinate system where the virtual camera is the center and the z-axis is the viewing direction), 
+the light direction is specified by the vector `(0, 0, -1)`. So we could calculate the angle between a normal vector in view coordinates, 
+and the vector `(0, 0, -1)` and could derive an intensity from this vector: The smaller the angle, the lighter, the bigger the angle, the
+darker it becomes at that position. If the angle is 90° or bigger, no light at all will be at that position.
+
+Instead of first calculating the angle and then invent some function as above we can directly use the [dot product] (https://en.wikipedia.org/wiki/Dot_product) between the two vectors. If the two vectors both have have lenght 1 (if they are normalized)
+then the dot product yields the cosine of the angle and that's pretty much what we want: A value that's 1 if the angle is 0 and that's 0 
+if the angle is 90° or bigger. So in a first step we directly want to use the result of the dot product between the normal vector and 
+the light direction as the red, green and blue intensity of the resulting color. Thus we need to change our pixel shader code like so:
+
+```C#
+	private const string _pixelShader = @"
+		#ifdef GL_ES
+			precision highp float;
+		#endif
+		varying vec3 modelpos;
+		varying vec3 normal;
+
+		void main()
+		{
+			float intensity = dot(normal, vec3(0, 0, -1));
+			gl_FragColor = vec4(intensity, intensity, intensity, 1);
+		}";
+
+```
+
+If you build and run this change, the cylinder is lit as if the light source would be attached to the cylinder and not to the camera.
+This is because we perform this calculation using the normal in model coordinates and NOT in view coordinates. So we also need to adjust
+our vertex shader to transform the normals into view coordinates first:
+
+```C#
+	private const string _vertexShader = @"
+		attribute vec3 fuVertex;
+		attribute vec3 fuNormal;
+		uniform mat4 FUSEE_MVP;
+		uniform mat4 FUSEE_MV;
+		varying vec3 modelpos;
+		varying vec3 normal;
+		void main()
+		{
+			modelpos = fuVertex;
+			normal = normalize(mat3(FUSEE_MV) * fuNormal);
+			gl_Position = FUSEE_MVP * vec4(fuVertex, 1.0);
+		}";
+```
+
+
 
 
 
