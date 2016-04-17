@@ -302,27 +302,23 @@ Since we built scale components into our modelview matrix, we need to normalize 
 
 Building and running thesse changes show a lit cylinder:
 
-![A simpliy lit cylinder] (_images/CylinderDiffuse.png)
+![A lit cylinder] (_images/CylinderDiffuse.png)
 
-Practice
-
- - Want some maths? In the vertex shader use the `FUSEE_ITMV` instead of the `FUSEE_MV` matrix. The result seems to be the same!
+###Practice
+ - Want some maths? In the vertex shader use the `FUSEE_ITMV` matrix instead of the `FUSEE_MV` matrix. The result seems to be the same!
    Look at the table above what's behind `FUSEE_ITMV`, then read  
-   [OpenGL Red Book, Appendix F] (http://www.glprogramming.com/red/appendixf.html)  and then try to explain:
+   [OpenGL Red Book, Appendix F] (http://www.glprogramming.com/red/appendixf.html) *Transforming Normals* until *Whew!* and then try to explain:
    - Why it is mathematically correct to use this matrix and why it's wrong to use the modelview matrix to tranform
-     the normals.
-   - Why - at least in our example - it seems to make no difference using the MV or ITMV matrix.
-
+     the normals?
+   - Why - at least in our example - it seems to make no difference using the MV or ITMV matrix?
  - What would happen if we performed the lighting calculation in clip space - in other words: if we transformed the 
    normals using MVP and not MV only?
-   
  - More hands-on and less maths: How would you apply colors to objects other than the grey we're having now, but still
    maintaining that 3D shaded look we worked so hard on?
    
 ##Self Contained Objects
-If you already solved the last practice above we can think in objects: We can now have different sets of 3D geometry each
-making a model (cubes, spheres, cylinders, ...), We can position, scale and rotate them and we can (or we soon learn how to)
-to give them individual colors.
+We can now have different sets of 3D geometry each making a model (cubes, spheres, cylinders, ...), We can position, scale and rotate 
+them and we can (or we soon learn how to) to give them individual colors.
 
 Imagine to create a scene built of a lot of individual models like those currently in the `Core/Assets` folder. Your
 `RenderAFrame()` method would become a long list of repeated instructions like:
@@ -333,7 +329,279 @@ If you have hierarchies of objecst you would additionally have to track parent-c
 correct model matrices of parents and grandparents before rendering the children. Remember the 
 [robot exercise from Tutorial 03] (../Tutorial03#exercise).
 
-Soon you would end up 
+Soon you would end up with a cluttered and unstructured block of code. To avoid that
+many 3D-realtime environments use the concept of a ***Scene Graph*** or ***Scene Tree***.
+Such a data structure is made up out of nodes where each node represents a visible 
+object on screen. Each node contains all relevant data needed to render a node, e.g.
+the geometry, the color/material settings and its position and orientation in 
+the 3D world coordinate system.
+
+In object-oriented programming environments it is common to use the programming 
+language's possibility to express objects to create such structures. Let's 
+do this here by adding a new class to our project that will contain all relevant
+information. Right-Click on the **Fusee.Tutorial04.Core** project and Choose "Add->Class"
+from the context menu. 
+
+In the "Add New Item" dialog name your class "SceneOb.cs". A new source code file will
+be created and added to the project. Make this the contents of your file:
+
+```C#
+using Fusee.Engine.Core;
+using Fusee.Math.Core;
+
+namespace Fusee.Tutorial.Core
+{
+    public class SceneOb
+    {
+        public Mesh Mesh;
+        public float3 Albedo = new float3(0.8f, 0.8f, 0.8f);
+        public float3 Pos = float3.Zero;
+        public float3 Rot = float3.Zero;
+        public float3 Pivot = float3.Zero;
+        public float3 Scale = float3.One;
+        public float3 ModelScale = float3.One;
+    }
+}
+```
+You should be familiar with most entries from the parameters of the `ModelXForm(..)` 
+method introduced in the [Parent-Child relations section of Tutorial 03]
+(../Tutorial03#parent-child-relations). What's new here is that we split up the 
+scale into two parts, `Scale` and `ModelScale`. We choose to do this because once 
+we expand `SceneOp` to handle parent-child relations, we want to be able to apply
+a scale either on the contained geometry only, or on the entire object including
+all children and grand-children. In addition, note the `Albedo` entry which we
+will use as the base color of an object - it's a float3 containing a red, a
+green and a blue component. The standard color is initialized to 80% grey.
+
+Add the cone, the cube, the cylinder, the pyramid and the sphere to the project's 
+`Assets` folder and set their `Build Action` and `Copy...` properties as described
+above.
+
+Let's first setup our pixel shader to handle the `albedo`:
+
+```C#
+	...
+	uniform vec3 albedo;
+
+	void main()
+	{
+		float intensity = dot(normal, vec3(0, 0, -1));
+		gl_FragColor = vec4(intensity * albedo, 1);
+	}
+```
+
+Then add a small helper method to our `Tutorial` class that allows us to 
+load a `Mesh` with a single method call.
+
+```C#
+	public static Mesh LoadMesh(string assetName)
+	{
+		SceneContainer sc = AssetStorage.Get<SceneContainer>(assetName);
+		MeshComponent mc = sc.Children.FindComponents<MeshComponent>(c => true).First();
+		return new Mesh
+		{
+			Vertices = mc.Vertices,
+			Normals = mc.Normals,
+			Triangles = mc.Triangles
+		};
+	}
+```
+
+In our `Init` method, load the meshes and then set up a list of such `SceneOb`s:
+
+```C#
+	public override void Init()
+	{
+		// Initialize the shader(s)
+		var shader = RC.CreateShader(_vertexShader, _pixelShader);
+		RC.SetShader(shader);
+		_albedoParam = RC.GetShaderParam(shader, "albedo");
+
+		// Load some meshes
+		Mesh cone = LoadMesh("Cone.fus");
+		Mesh cube = LoadMesh("Cube.fus");
+		Mesh cylinder = LoadMesh("Cylinder.fus");
+		Mesh pyramid = LoadMesh("Pyramid.fus");
+		Mesh sphere = LoadMesh("Sphere.fus");
+
+		// Setup a list of objects
+		_sceneList = new List<SceneOb>(new []
+		{
+			// Body
+			new SceneOb { Mesh = cube,     Pos = new float3(0, 2.75f, 0),     ModelScale = new float3(0.5f, 1, 0.25f),      },
+			// Legs
+			new SceneOb { Mesh = cylinder, Pos = new float3(-0.25f, 1, 0),    ModelScale = new float3(0.15f, 1, 0.15f),     },
+			new SceneOb { Mesh = cylinder, Pos = new float3( 0.25f, 1, 0),    ModelScale = new float3(0.15f, 1, 0.15f),     },
+			// Shoulders
+			new SceneOb { Mesh = sphere,   Pos = new float3(-0.75f, 3.5f, 0), ModelScale = new float3(0.25f, 0.25f, 0.25f), },
+			new SceneOb { Mesh = sphere,   Pos = new float3( 0.75f, 3.5f, 0), ModelScale = new float3(0.25f, 0.25f, 0.25f), },
+			// Arms
+			new SceneOb { Mesh = cylinder, Pos = new float3(-0.75f, 2.5f, 0), ModelScale = new float3(0.15f, 1, 0.15f),     },
+			new SceneOb { Mesh = cylinder, Pos = new float3( 0.75f, 2.5f, 0), ModelScale = new float3(0.15f, 1, 0.15f),     },
+			// Head
+			new SceneOb { Mesh = sphere,   Pos = new float3(0, 4.2f, 0),      ModelScale = new float3(0.35f, 0.5f, 0.35f),  },
+		});
+
+		// Set the clear color for the backbuffer
+		RC.ClearColor = new float4(1, 1, 1, 1);
+	}
+```
+
+Finally in `RenderAFrame()` iterate over the `_sceneList` and render each object.
+```C#
+	public override void RenderAFrame()
+	{
+		// Clear the backbuffer
+		RC.Clear(ClearFlags.Color | ClearFlags.Depth);
+
+		float2 speed = Mouse.Velocity + Touch.GetVelocity(TouchPoints.Touchpoint_0);
+		if (Mouse.LeftButton || Touch.GetTouchActive(TouchPoints.Touchpoint_0))
+		{
+			_alpha -= speed.x*0.0001f;
+			_beta  -= speed.y*0.0001f;
+		}
+
+		// Setup matrices
+		var aspectRatio = Width / (float)Height;
+		RC.Projection = float4x4.CreatePerspectiveFieldOfView(3.141592f * 0.25f, aspectRatio, 0.01f, 20);
+		var view = float4x4.CreateTranslation(0, 0, 8)*float4x4.CreateRotationY(_alpha)*float4x4.CreateRotationX(_beta)*float4x4.CreateTranslation(0, -2f, 0);
+
+		foreach (var so in _sceneList)
+		{
+			RC.ModelView = view * ModelXForm(so.Pos, so.Rot, so.Pivot) * float4x4.CreateScale(so.ModelScale);
+			RC.SetShaderParam(_albedoParam, so.Albedo);
+			RC.Render(so.Mesh);
+		}
+
+		// Swap buffers: Show the contents of the backbuffer (containing the currently rendered farame) on the front buffer.
+		Present();
+	}
+```
+Note how we changed the setting of the view matrix to make the overall object fit into 
+the viewing frustum: We simply place the camera now 8 units away from the object (instead of 3) and position the camera 2 units up (or rather take the object 2 units down).
+
+The result should look like this:
+
+![Man made of primitives] (_images/TinMan.png)
+
+
+###Practice
+ - Add more objects to make a more sophisticated tin man.
+ - Set the arms' and legs' pivot points correctly and add some input axes to 
+   control their rotation angles.
+ - Toy around with the objecs' albedos to add some more color.
+ 
+As a last step we will now add the possibility of creating hiearchies to our
+`SceneOb` Class. To do this, we put the `_sceneList` into the object itself-
+
+Create a field `Children` within `SceneOb`:
+```C#
+	public List<SceneOb> Children;
+```
+Note that each `SceneOb` can now hold an arbitrary number of `SceneOb`s as children.
+
+In the Tutorial class replace the `_sceneList` field by a single `SceneOb` field called `_root`:
+```C#
+	private SceneOb _root;
+```
+
+Without having a `_sceneList` any more, we now need to instantiate the `_root` and fill its
+list of children instead inside our `Init()` method:
+
+```C#
+	// Setup a list of objects
+	_root = new SceneOb { 
+		Children = new List<SceneOb>(new []
+		{
+			// Body
+			new SceneOb { Mesh = cube,     Pos = new float3(0, 2.75f, 0),     ModelScale = new float3(0.5f, 1, 0.25f),      },
+			// Legs
+			new SceneOb { Mesh = cylinder, Pos = new float3(-0.25f, 1, 0),    ModelScale = new float3(0.15f, 1, 0.15f),     },
+			new SceneOb { Mesh = cylinder, Pos = new float3( 0.25f, 1, 0),    ModelScale = new float3(0.15f, 1, 0.15f),     },
+			// Shoulders
+			new SceneOb { Mesh = sphere,   Pos = new float3(-0.75f, 3.5f, 0), ModelScale = new float3(0.25f, 0.25f, 0.25f), },
+			new SceneOb { Mesh = sphere,   Pos = new float3( 0.75f, 3.5f, 0), ModelScale = new float3(0.25f, 0.25f, 0.25f), },
+			// Arms
+			new SceneOb { Mesh = cylinder, Pos = new float3(-0.75f, 2.5f, 0), ModelScale = new float3(0.15f, 1, 0.15f),     },
+			new SceneOb { Mesh = cylinder, Pos = new float3( 0.75f, 2.5f, 0), ModelScale = new float3(0.15f, 1, 0.15f),     },
+			// Head
+			new SceneOb { Mesh = sphere,   Pos = new float3(0, 4.2f, 0),      ModelScale = new float3(0.35f, 0.5f, 0.35f),  },
+		})};
+```
+
+Add a method to render a `SceneOb` to the Tutorial class. Rendering a `SceneOb` is now not only
+setting the `SceneOb`'s parameters and render its mesh but also ***recursively*** render all 
+listed `Children`. In addition, a SceneOb may have no mesh at all and may also have an empty
+list of children, so we need to check these for `null`. Even without a valid `Mesh`, 
+a resulting transformation will be calculated and passed on the children. This way, a child
+object inherits its parent's transformations and can apply its own transformations to be relative
+to its parent.
+
+```C#
+	void RenderSceneOb(SceneOb so, float4x4 modelView)
+	{
+		modelView = modelView * ModelXForm(so.Pos, so.Rot, so.Pivot) * float4x4.CreateScale(so.Scale);
+		if (so.Mesh != null)
+		{
+			RC.ModelView = modelView*float4x4.CreateScale(so.ModelScale);
+			RC.SetShaderParam(_albedoParam, so.Albedo);
+			RC.Render(so.Mesh);
+		}
+
+		if (so.Children != null)
+		{
+			foreach (var child in so.Children)
+			{
+				RenderSceneOb(child, modelView);
+			}
+		}
+	}
+```
+
+Finally, in `RenderAFrame()` we can strip down the rendering of the scene to a single line rendering the `_root` and passing the `view` matrix as the
+ModelView matrix to start with.
+
+```C#
+	// Setup matrices
+	var aspectRatio = Width / (float)Height;
+	RC.Projection = float4x4.CreatePerspectiveFieldOfView(3.141592f * 0.25f, aspectRatio, 0.01f, 20);
+	float4x4 view = float4x4.CreateTranslation(0, 0, 8)*float4x4.CreateRotationY(_alpha)*float4x4.CreateRotationX(_beta)*float4x4.CreateTranslation(0, -2f, 0);
+
+	RenderSceneOb(_root, view);
+```
+
+The result should look and behave exactly as before. But now we can build up a hierarchy of objects instead of one single flat list.
+
+![Man made of primitives] (_images/TinManColor.png)
+
+ - Visit the [result as web application]
+  (https://cdn.rawgit.com/griestopf/Fusee.Tutorial/xxxx/Tutorial04Completed/out/Fusee.Tutorial.Web.html)
+  (Ctrl-Click or Long-Press to open in new tab).
+ 
+ - See [Tutorial.cs] (../Tutorial04Completed/Core/Tutorial.cs) in the [Tutorial04 Completed] (../Tutorial04Completed) folder for 
+   the overall state so far.
+
+##Exercise
+
+ - Create a hierarchy of objects with at least three levels, e.g. by extending our model to have elbows and wrists / knees and feet. Use color 
+   on your objects to make the scene look nice.
+ - Add the possibility to give your `SceneOb` names (strings). Add a method declared as
+   
+   ```C#
+	public static SceneOb FindSceneOb(SceneOb so, string name)
+   ```
+   that will recursively traverse the tree starting with `so` and return the first `SceneOb` with the given name.
+   
+ - Add some way to either animate or interactively control some of the object's rotation angles. You will probably need to keep explicit 
+   references to those objects. Maybe the `FindSceneOb` method is useful here. Maybe you want to use a single input axis to control more than 
+   one object's rotation axis simultaneously. 
+
+ - Just for practice: Explain to yourself how the parent object inherits its transformation to its children: Set a breakpoint inside `RenderSceneOb` and
+   observe the modelView matrices.
+
+
+
+
 
 
 
