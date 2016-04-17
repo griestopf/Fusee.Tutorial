@@ -9,5 +9,6 @@ Step-by-step tutorial to get familiar with [FUSEE] (http://www.fusee3d.org)
  
  - [Tutorial 03] (Tutorial03): Matrices, Normals, Visible edges in geometry.
  
+ - [Tutorial 04] (Tutorial04): Hierarchies, SceneGraph, Simple Lighting Calculation.
  
 
