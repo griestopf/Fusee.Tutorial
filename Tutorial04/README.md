@@ -245,7 +245,7 @@ darker it becomes at that position. If the angle is 90° or bigger, no light at 
 Instead of first calculating the angle and then invent some function as above we can directly use the [dot product] (https://en.wikipedia.org/wiki/Dot_product) between the two vectors. If the two vectors both have have lenght 1 (if they are normalized)
 then the dot product yields the cosine of the angle and that's pretty much what we want: A value that's 1 if the angle is 0 and that's 0 
 if the angle is 90° or bigger. So in a first step we directly want to use the result of the dot product between the normal vector and 
-the light direction as the red, green and blue intensity of the resulting color. Thus we need to change our pixel shader code like so:
+the light direction as the red, green and blue intensity of the resulting color. Thus we need to change our pixel shader code to look like this:
 
 ```C#
 	private const string _pixelShader = @"
@@ -262,6 +262,8 @@ the light direction as the red, green and blue intensity of the resulting color.
 		}";
 
 ```
+Note how the `intensity` is calculated as the cosine betwenn `(0, 0, -1)` and the normal vector in `float intensity = dot(normal, vec3(0, 0, -1));`.
+In the next line this intensity is used as red, green and blue for the resulting color.
 
 If you build and run this change, the cylinder is lit as if the light source would be attached to the cylinder and not to the camera.
 This is because we perform this calculation using the normal in model coordinates and NOT in view coordinates. So we also need to adjust
@@ -282,6 +284,21 @@ our vertex shader to transform the normals into view coordinates first:
 			gl_Position = FUSEE_MVP * vec4(fuVertex, 1.0);
 		}";
 ```
+
+Two thing happended: First we need not only the already composite ModelViewProjection matrix but only the ModelView transformation. This is
+because we want to perform our lighting calculation in view space and NOT in clip space. So we simply declare `uniform mat4 FUSEE_MV` and
+can be sure to get the modelview matrix as well. In `main()` we then multiply the normal with FUSEE_MV. But FUSEE_MV is of course a 4x4
+matrix because it typically contains translations which cannot be expressed in 3x3 matrices. Our normal by the way is somewhat different from 
+a position vector. It contains an orientation and NOT a position in 3-space. So all we want to do with a normal to beam it up into view space
+is, to perform the rotations (and to some extent the scale) part of the transfromation on it. Thus we cast our 4x4 ModelView matrix to 
+a 3x3 matrix (`mat3(FUSEE_MV)`). After transforming the normal with this matrix, we normalize the normal, that is, we stretch or shrink it
+appropriately to make its length 0. Remember, that the dot product only returns cosine values if the vectors passed into it have unit length.
+Since we built scale components into our modelview matrix, we need to normalize the results here.
+
+Building and running thesse changes show a lit cylinder:
+
+![A simpliy lit cylinder] (_images/CylinderDiffuse.png)
+
 
 
 
