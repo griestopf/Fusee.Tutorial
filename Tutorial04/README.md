@@ -285,13 +285,18 @@ our vertex shader to transform the normals into view coordinates first:
 		}";
 ```
 
-Two thing happended: First we need not only the already composite ModelViewProjection matrix but only the ModelView transformation. This is
-because we want to perform our lighting calculation in view space and NOT in clip space. So we simply declare `uniform mat4 FUSEE_MV` and
-can be sure to get the modelview matrix as well. In `main()` we then multiply the normal with FUSEE_MV. But FUSEE_MV is of course a 4x4
-matrix because it typically contains translations which cannot be expressed in 3x3 matrices. Our normal by the way is somewhat different from 
-a position vector. It contains an orientation and NOT a position in 3-space. So all we want to do with a normal to beam it up into view space
-is, to perform the rotations (and to some extent the scale) part of the transfromation on it. Thus we cast our 4x4 ModelView matrix to 
-a 3x3 matrix (`mat3(FUSEE_MV)`). After transforming the normal with this matrix, we normalize the normal, that is, we stretch or shrink it
+Two thing happened: 
+
+ 1. We do not only need the composite ModelViewProjection matrix but additionally the ModelView transformation as well. This is
+    because we want to perform our lighting calculation in view space and NOT in clip space. So we simply declare 
+	`uniform mat4 FUSEE_MV` and can be sure to get the modelview matrix as well. 
+ 2. In `main()` we then multiply the normal with FUSEE_MV. But FUSEE_MV is of course a 4x4 matrix because it typically 
+    contains translations which cannot be expressed in 3x3 matrices. Our normal by the way is somewhat different from a 
+	position vector. It contains an orientation and NOT a position in 3-space. So all we want to do with a normal to beam
+	it up into view space is, to perform the rotations (and to some extent the scale) part of the transfromation on it. 
+	Thus we cast our 4x4 ModelView matrix to a 3x3 matrix (`mat3(FUSEE_MV)`). 
+
+After transforming the normal with this matrix, we normalize the normal, that is, we stretch or shrink it
 appropriately to make its length 0. Remember, that the dot product only returns cosine values if the vectors passed into it have unit length.
 Since we built scale components into our modelview matrix, we need to normalize the results here.
 
@@ -299,7 +304,36 @@ Building and running thesse changes show a lit cylinder:
 
 ![A simpliy lit cylinder] (_images/CylinderDiffuse.png)
 
+Practice
 
+ - Want some maths? In the vertex shader use the `FUSEE_ITMV` instead of the `FUSEE_MV` matrix. The result seems to be the same!
+   Look at the table above what's behind `FUSEE_ITMV`, then read  
+   [OpenGL Red Book, Appendix F] (http://www.glprogramming.com/red/appendixf.html)  and then try to explain:
+   - Why it is mathematically correct to use this matrix and why it's wrong to use the modelview matrix to tranform
+     the normals.
+   - Why - at least in our example - it seems to make no difference using the MV or ITMV matrix.
+
+ - What would happen if we performed the lighting calculation in clip space - in other words: if we transformed the 
+   normals using MVP and not MV only?
+   
+ - More hands-on and less maths: How would you apply colors to objects other than the grey we're having now, but still
+   maintaining that 3D shaded look we worked so hard on?
+   
+##Self Contained Objects
+If you already solved the last practice above we can think in objects: We can now have different sets of 3D geometry each
+making a model (cubes, spheres, cylinders, ...), We can position, scale and rotate them and we can (or we soon learn how to)
+to give them individual colors.
+
+Imagine to create a scene built of a lot of individual models like those currently in the `Core/Assets` folder. Your
+`RenderAFrame()` method would become a long list of repeated instructions like:
+ - Set the current ModelView transformation.
+ - Set the current color (and probably other calculation parameters in the future).
+ - Render a certain mesh.
+If you have hierarchies of objecst you would additionally have to track parent-child relationships by chaining the
+correct model matrices of parents and grandparents before rendering the children. Remember the 
+[robot exercise from Tutorial 03] (../Tutorial03#exercise).
+
+Soon you would end up 
 
 
 
