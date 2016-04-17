@@ -575,7 +575,7 @@ The result should look and behave exactly as before. But now we can build up a h
 ![Man made of primitives] (_images/TinManColor.png)
 
  - Visit the [result as web application]
-  (https://cdn.rawgit.com/griestopf/Fusee.Tutorial/xxxx/Tutorial04Completed/out/Fusee.Tutorial.Web.html)
+  (https://cdn.rawgit.com/griestopf/Fusee.Tutorial/d704a6f/Tutorial04Completed/out/Fusee.Tutorial.Web.html) 
   (Ctrl-Click or Long-Press to open in new tab).
  
  - See [Tutorial.cs] (../Tutorial04Completed/Core/Tutorial.cs) in the [Tutorial04 Completed] (../Tutorial04Completed) folder for 
