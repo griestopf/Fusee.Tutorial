@@ -111,7 +111,7 @@ of examples where some of the above matrices will be used. In this tutorial we w
 `RC.ModelView` and to `RC.Projection` from within `RenderAFrame()` and the product of ModelView and Projection 
 in the vertex shader out of `uniform vec4 FUSEE_MVP`. To do this follow these steps:
 
- - Inside the vertex shader simply replace the identifyer `xform` with `FUSEE_MVP`:
+ - Inside the vertex shader simply replace the identifier `xform` with `FUSEE_MVP`:
 
    ```C#
 		private Mesh _mesh;
@@ -285,7 +285,7 @@ our vertex shader to transform the normals into view coordinates first:
 		}";
 ```
 
-Two thing happened: 
+Two things happened: 
 
  1. We do not only need the composite ModelViewProjection matrix but additionally the ModelView transformation as well. This is
     because we want to perform our lighting calculation in view space and NOT in clip space. So we simply declare 
@@ -325,11 +325,11 @@ Imagine to create a scene built of a lot of individual models like those current
  - Set the current ModelView transformation.
  - Set the current color (and probably other calculation parameters in the future).
  - Render a certain mesh.
-If you have hierarchies of objecst you would additionally have to track parent-child relationships by chaining the
+If you have hierarchies of objects you would additionally have to track parent-child relationships by chaining the
 correct model matrices of parents and grandparents before rendering the children. Remember the 
 [robot exercise from Tutorial 03] (../Tutorial03#exercise).
 
-Soon you would end up with a cluttered and unstructured block of code. To avoid that
+Soon you would end up with a cluttered and unstructured block of code. To avoid that,
 many 3D-realtime environments use the concept of a ***Scene Graph*** or ***Scene Tree***.
 Such a data structure is made up out of nodes where each node represents a visible 
 object on screen. Each node contains all relevant data needed to render a node, e.g.
@@ -407,7 +407,15 @@ load a `Mesh` with a single method call.
 	}
 ```
 
-In our `Init` method, load the meshes and then set up a list of such `SceneOb`s:
+On the `Tutorial` class level, add two fields, one to access the `albedo` and another one to hold a list of
+`SceneOb` instances:
+
+```C#
+    private IShaderParam _albedoParam;
+	private List<SceneOb> _sceneList;
+```
+
+In our `Init` method, load the meshes and then fill the `_sceneList` with `SceneOb` instances holding these meshes.
 
 ```C#
 	public override void Init()
@@ -500,7 +508,7 @@ Create a field `Children` within `SceneOb`:
 ```
 Note that each `SceneOb` can now hold an arbitrary number of `SceneOb`s as children.
 
-In the Tutorial class replace the `_sceneList` field by a single `SceneOb` field called `_root`:
+In the `Tutorial` class replace the `_sceneList` field by a single `SceneOb` field called `_root`:
 ```C#
 	private SceneOb _root;
 ```

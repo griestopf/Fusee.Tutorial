@@ -155,7 +155,7 @@ namespace Fusee.Tutorial.Core
 
             RenderSceneOb(_root, view);
 
-            // Swap buffers: Show the contents of the backbuffer (containing the currently rendered farame) on the front buffer.
+            // Swap buffers: Show the contents of the backbuffer (containing the currently rendered frame) on the front buffer.
             Present();
         }
 
