@@ -242,7 +242,7 @@ the light direction is specified by the vector `(0, 0, -1)`. So we could calcula
 and the vector `(0, 0, -1)` and could derive an intensity from this vector: The smaller the angle, the lighter, the bigger the angle, the
 darker it becomes at that position. If the angle is 90° or bigger, no light at all will be at that position.
 
-Instead of first calculating the angle and then invent some function as above we can directly use the [dot product] (https://en.wikipedia.org/wiki/Dot_product) between the two vectors. If the two vectors both have have lenght 1 (if they are normalized)
+Instead of first calculating the angle and then invent some function as above we can directly use the [dot product] (https://en.wikipedia.org/wiki/Dot_product) between the two vectors. If the two vectors both have have length 1 (if they are normalized)
 then the dot product yields the cosine of the angle and that's pretty much what we want: A value that's 1 if the angle is 0 and that's 0 
 if the angle is 90° or bigger. So in a first step we directly want to use the result of the dot product between the normal vector and 
 the light direction as the red, green and blue intensity of the resulting color. Thus we need to change our pixel shader code to look like this:
@@ -297,7 +297,7 @@ Two things happened:
 	Thus we cast our 4x4 ModelView matrix to a 3x3 matrix (`mat3(FUSEE_MV)`). 
 
 After transforming the normal with this matrix, we normalize the normal, that is, we stretch or shrink it
-appropriately to make its length 0. Remember, that the dot product only returns cosine values if the vectors passed into it have unit length.
+appropriately to make its length 1. Remember, that the dot product only returns cosine values if the vectors passed into it have unit length.
 Since we built scale components into our modelview matrix, we need to normalize the results here.
 
 Building and running thesse changes show a lit cylinder:
@@ -343,7 +343,7 @@ information. Right-Click on the **Fusee.Tutorial04.Core** project and Choose "Ad
 from the context menu. 
 
 In the "Add New Item" dialog name your class "SceneOb.cs". A new source code file will
-be created and added to the project. Make this the contents of your file:
+be created and added to the project. Fill in the following code:
 
 ```C#
 using Fusee.Engine.Core;
