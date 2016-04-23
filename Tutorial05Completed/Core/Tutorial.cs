@@ -50,7 +50,8 @@ namespace Fusee.Tutorial.Core
             Mesh cube = LoadMesh("Cube.fus");
             Mesh cylinder = LoadMesh("Cylinder.fus");
             Mesh sphere = LoadMesh("Sphere.fus");
-
+            SceneContainer wuggy = AssetStorage.Get<SceneContainer>("wuggy.fus");
+            
             // Setup a list of objects
             _root = new SceneOb { 
                 Children = new List<SceneOb>(new []
