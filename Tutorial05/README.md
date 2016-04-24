@@ -458,8 +458,10 @@ Compiling and building all changes should result in the wuggy model shown with s
 
 ##Exercise
 
- - Toy around with the specular and diffuse components in the pixel shader. Try displaying the specular component only. 
-   Let the user interactively change the shininess component with some keys and see what happens.
+ - Toy around with the specular and diffuse components in the pixel shader. 
+   - See what happens if we don't normalize the interpolated normal vector. 
+   - Try displaying the specular component only. 
+   - Let the user interactively change the shininess component with some keys and see what happens.
 
  - Use the material properties `Specular.Intensity` and `Specular.Color` to reduce the highlights to the settings
    found in the material of the `.fus` file.
