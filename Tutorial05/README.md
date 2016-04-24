@@ -32,7 +32,7 @@ a **Scene Graph***.
 FUSEE already comes with a set of classes allowing to build up Scene Graphs. You can find these classes in the [Fusee.Serialization project]
 (https://github.com/FUSEEProjectTeam/Fusee/tree/develop/src/Serialization). All classes found here can be serialized and deserialized using 
 automatically generated serialization code. In Tutorial 04 you already used these classes to load a `.fus` file and retrieve some 
-Mesh data out of it. But `.fus` can not only store simple meshes but can contain complete scene graphs.
+Mesh data out of it. But `.fus` can not only store simple meshes - it can contain complete scene graphs.
 
 A Scene Graph in FUSEE is always a tree of `SceneNodeContainer` objects (we will just call them *nodes*). 
 Take a look at the [source code] (https://github.com/FUSEEProjectTeam/Fusee/blob/develop/src/Serialization/SceneNodeContainer.cs)
