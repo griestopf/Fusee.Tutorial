@@ -125,15 +125,15 @@ To Implement your own Rendering Visitor you should do the following.
 	class Renderer : SceneVisitor
     {
         [VisitMethod]
-        public void OnMesh(MeshComponent mesh)
+        void OnMesh(MeshComponent mesh)
         {
         }
         [VisitMethod]
-        public void OnMaterial(MaterialComponent material)
+        void OnMaterial(MaterialComponent material)
         {
         }
         [VisitMethod]
-        public void OnTransform(TransformComponent xform)
+        void OnTransform(TransformComponent xform)
         {
         }
     }
@@ -157,11 +157,150 @@ To Implement your own Rendering Visitor you should do the following.
 		_renderer = new Renderer();
 	```
 
- 4. In the `RenderAFrame()` method, somwhere between `Clear()`ing the back buffer and `Present()`ing the contents to the front
+ 4. In the `RenderAFrame()` method, somewhere between `Clear()`ing the back buffer and `Present()`ing the contents to the front
     buffer, use our `Renderer` to traverse the wuggy scene:
 	
+ 	```C#
+		_renderer.Traverse(_wuggy.Children);
+	```
 	
-		
+Of course our renderer doesn't do anything right now. But you can already observe him visiting the components:
+
+###Practice
+ - Build the project. Set three breakpoints - one at the closing curly brace (`}`) of each of the visitor methods `On...()` 
+   defined in our `Renderer` class. Start the program and observe the mesh, material and transform components as they
+   are visitet. 
+ - While debugging, add the identifier `CurrentNode` to the Watch window. This way you can observe which *node* the currently
+   visited *component* belongs to.
+ - Take your sketch of the scene graph from the previous practice block (the image with the squares and circles depicting
+   wuggy's nodes and components) and identify which circle you're at while hopping from component to component using
+   the `F5` key.
+
+Now you should get the idea how you could add code to the three empty methods to add the contents of the respective
+node to the render context `RC` during traversal.
+
+There are some things missing though: Using the three methods we can now track each of the components we're interested in while
+traversing. But we also need to be notified by the visitor before entering into child list and also after all children
+of a child list are done visiting. In other words we want to know if another step in the depth of the hierarchy is taken
+into whatever direction (in or out). Fortunately, the `SceneVisitor` class already provides this information: It calls
+the method `PushState()` when going one step deeper in the hiearchy of nodes (when entering a `Children` list) and it
+calls `PopState()` when all nodes in a  `Children` list have been visited and the traversal returns to the parent node.
+
+If we want to add our own code when these events happen, all we need to do is to override these pre-defined methods. In
+the `Renderer` class, add the following methods:
+
+ 	```C#
+	protected override void PushState()
+	{
+	}
+	protected override void PopState()
+	{
+	}
+ 	```
+ 
+So altogether we should now have five empty methods in `Renderer`.
+###Practice
+ - Set two more breakbpoints at the closing curly braces and observe the visitor doing its work including going down and up 
+   the hierarchy while looking at `CurrentNode` to see where the traversal is currently at.
+ - **Advanced**. Add functionality to output a structured text with the contents of `_wuggy` with indentations showing
+   the level in the hierarchy. Add some syntactic sugar to your output to yield an XML or JSON file.
+ 
+The two newly added methods' names already show what's typically done here: We need to perform push or pop operations
+on stack-like data structures keeping track of the current traversal state. For rendering we typically need to keep track
+of the current model-view matrix. Why? Because as you remember from `RenderSceneOb`, every visited node contributes its 
+own local transformation to the overall model-view matrix. Whenever a child list is done rendering. The original model-view-matrix
+needs to be restored. In our new visitor approach, the right time for restoring is in `PopState()`. But here we need to know
+what the original matrix was. We can get access to the original matrix in `PushState()`.
+
+Now let's add the missing stuff to make our `Renderer` do what it should.
+ - The `Renderer` needs access to the `RenderContext` because it will need to call its methods such as `Render()` and `SetShaderParam()`.
+ - We need a Stack to keep a list of matrices accessed in a "last-in, first-out" (LIFO) manner.
+   The Fusee.Xene project also has some pre-fabricated building blocks for this. We will use the `CollapsingStateStack<float4x4>`
+   data type. It has a `Push()` and a `Pop()` operation and we get access to the top-of-stack using the `Tos` property.
+ - In the scene tree we have `MeshComponent` objects but the `RenderContext.Render()` method takes `Mesh` objects. The reason why these two
+   types exist is that `MeshComponent` is implemented for serialization while `Mesh` is tied to the `RenderContext` class which knows
+   about rendering. To allow applications to rely on the Serialization project only, these two types are kept separate. For every
+   `MaterialComponent` we encounter during traversal, we will need to create a `Mesh`. To keep the renderer from creating the same
+   `Mesh`es again and again in each rendering step, we will keep a cache of already created `Mesh`es. We will implement this using
+   a `Dictionary<MeshComponent, Mesh>` object.
+ - For now we will only take the diffuse color from the `MaterialComponent` objects.
+ 
+Putting it all together we will end up with a `Renderer` like that:
+
+```C#
+    class Renderer : SceneVisitor
+    {
+        public RenderContext RC;
+        public IShaderParam AlbedoParam;
+        public float4x4 View;
+        private Dictionary<MeshComponent, Mesh> _meshes = new Dictionary<MeshComponent, Mesh>();
+        private CollapsingStateStack<float4x4> _mv = new CollapsingStateStack<float4x4>();
+        private Mesh LookupMesh(MeshComponent mc)
+        {
+            Mesh mesh;
+            if (!_meshes.TryGetValue(mc, out mesh))
+            {
+                mesh = new Mesh
+                {
+                    Vertices = mc.Vertices,
+                    Normals = mc.Normals,
+                    Triangles = mc.Triangles
+                };
+                _meshes[mc] = mesh;
+            }
+            return mesh;
+        }
+
+        protected override void InitState()
+        {
+            _mv.Clear();
+            _mv.Tos = float4x4.Identity;
+        }
+        protected override void PushState()
+        {
+            _mv.Push();
+        }
+        protected override void PopState()
+        {
+            _mv.Pop();
+            RC.ModelView = View*_mv.Tos;
+        }
+        [VisitMethod]
+        void OnMesh(MeshComponent mesh)
+        {
+            RC.Render(LookupMesh(mesh));
+        }
+        [VisitMethod]
+        void OnMaterial(MaterialComponent material)
+        {
+            RC.SetShaderParam(AlbedoParam, material.Diffuse.Color);
+        }
+        [VisitMethod]
+        void OnTransform(TransformComponent xform)
+        {
+            _mv.Tos *= xform.Matrix();
+            RC.ModelView = View * _mv.Tos;
+        }
+    }
+```
+
+Inside `RenderAFrame()` remove rendering the `SceneOb`s from Tutorial 04 and setup the view matrix and pass it to the `Renderer` like so
+```C#
+	float4x4 view = float4x4.CreateTranslation(0, 0, 5)*float4x4.CreateRotationY(_alpha)*float4x4.CreateRotationX(_beta)*
+					float4x4.CreateTranslation(0, -0.5f, 0);
+	_renderer.View = view;
+	_renderer.Traverse(_wuggy.Children);
+```
+
+Building and running this should result in the wuggy model shown.
+
+![Wuggy in FUSEE](_images/WuggyInFusee.png)
+
+###Practice
+Understand how the renderer operates
+
+
+
    
    
    

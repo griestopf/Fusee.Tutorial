@@ -13,18 +13,56 @@ namespace Fusee.Tutorial.Core
 
     class Renderer : SceneVisitor
     {
+        public RenderContext RC;
+        public IShaderParam AlbedoParam;
+        public float4x4 View;
+        private Dictionary<MeshComponent, Mesh> _meshes = new Dictionary<MeshComponent, Mesh>();
+        private CollapsingStateStack<float4x4> _mv = new CollapsingStateStack<float4x4>();
+        private Mesh LookupMesh(MeshComponent mc)
+        {
+            Mesh mesh;
+            if (!_meshes.TryGetValue(mc, out mesh))
+            {
+                mesh = new Mesh
+                {
+                    Vertices = mc.Vertices,
+                    Normals = mc.Normals,
+                    Triangles = mc.Triangles
+                };
+                _meshes[mc] = mesh;
+            }
+            return mesh;
+        }
+
+        protected override void InitState()
+        {
+            _mv.Clear();
+            _mv.Tos = float4x4.Identity;
+        }
+        protected override void PushState()
+        {
+            _mv.Push();
+        }
+        protected override void PopState()
+        {
+            _mv.Pop();
+            RC.ModelView = View*_mv.Tos;
+        }
         [VisitMethod]
         void OnMesh(MeshComponent mesh)
         {
+            RC.Render(LookupMesh(mesh));
         }
         [VisitMethod]
         void OnMaterial(MaterialComponent material)
         {
+            RC.SetShaderParam(AlbedoParam, material.Diffuse.Color);
         }
-
         [VisitMethod]
         void OnTransform(TransformComponent xform)
         {
+            _mv.Tos *= xform.Matrix();
+            RC.ModelView = View * _mv.Tos;
         }
     }
 
@@ -39,6 +77,7 @@ namespace Fusee.Tutorial.Core
         private float _beta;
 
         private SceneOb _root;
+        private SceneContainer _wuggy;
         private Renderer _renderer;
 
 
@@ -70,10 +109,10 @@ namespace Fusee.Tutorial.Core
             Mesh cube = LoadMesh("Cube.fus");
             Mesh cylinder = LoadMesh("Cylinder.fus");
             Mesh sphere = LoadMesh("Sphere.fus");
-            SceneContainer wuggy = AssetStorage.Get<SceneContainer>("wuggy.fus");
-
+            _wuggy = AssetStorage.Get<SceneContainer>("wuggy.fus");
             _renderer = new Renderer();
-            _renderer.Traverse(wuggy.Children);
+            _renderer.RC = RC;
+            _renderer.AlbedoParam = _albedoParam;
 
             // Setup a list of objects
             _root = new SceneOb { 
@@ -147,9 +186,10 @@ namespace Fusee.Tutorial.Core
             // Setup matrices
             var aspectRatio = Width / (float)Height;
             RC.Projection = float4x4.CreatePerspectiveFieldOfView(3.141592f * 0.25f, aspectRatio, 0.01f, 20);
-            float4x4 view = float4x4.CreateTranslation(0, 0, 8)*float4x4.CreateRotationY(_alpha)*float4x4.CreateRotationX(_beta)*float4x4.CreateTranslation(0, -2f, 0);
+            float4x4 view = float4x4.CreateTranslation(0, 0, 5)*float4x4.CreateRotationY(_alpha)*float4x4.CreateRotationX(_beta)*float4x4.CreateTranslation(0, -0.5f, 0);
+            _renderer.View = view;
+            _renderer.Traverse(_wuggy.Children);
 
-            RenderSceneOb(_root, view);
 
             // Swap buffers: Show the contents of the backbuffer (containing the currently rendered frame) on the front buffer.
             Present();
