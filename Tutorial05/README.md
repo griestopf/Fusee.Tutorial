@@ -2,7 +2,7 @@
 
 ##Goals
  - Understand FUSEE's built-in SceneGraph and traversal functionality
- - Implement a more complex shader with one arbitrary light source
+ - Implement a more complex shader with specular component
 
 ##Shaders are Assets now 
 Build and run Tutorial 05. The output looks like we left off at [Tutorial 04](../Tutorial04). Under the hood we have one small enhancement:
@@ -346,8 +346,44 @@ Finally in `RenderAFrame` we can access this transform node before rendering and
     _wheelBigL.Rotation += new float3(-0.05f * Keyboard.WSAxis, 0, 0);
 ```
 
-##More Realism by 
+##More Realism by Specular Light
+Finally we want to blow up our shader to additionally handle a specular component of the light source which will add a bit more realism to the
+resulting images. The specular component creates highlights on the surfaces by simulating mirrors of the light source(s). To get an idea how
+the specular component is calculated, look at the following image
 
+![The specular component](_images/Specular.png)
+
+The specular intensity at a point on the surface is high, if the angle between the surface normal (N) to the incoming light source (L) and the 
+angle between N and the viewer (L) are nearly the same. In this situation the viewer can see a mirror image of the light source at the position 
+on the surface. To get a measure how good this mirror condition is given, we take the half-way vector between V and L and call it H. Now we
+measure the angle between H and N. If it is 0 we have a perfect mirror condition. The bigger the agle gets, the less a viewer can see the light's
+mirror image on the surface. So again, we take the dot product to get a value of 1 if the angle between the two vectors H and N is 0 and which 
+will be 0 if the angle is 90°. In addition, the material can define a value called "shininess" controlling how fast the intensity should 
+go towards zero if the angle becomes bigger. Mathematically this can be achieved by taking the result of the dot product to the power of "shininess".
+
+The higher the shininess the smaller and sharper the highlight is. Lower shininess values result in bigger and blurrier highlights and thus simulate
+less glossy materials.
+
+To start, we want to move all the shader related stuff from our `Init()` method to the `Renderer` since here we have a closer relation between 
+the shader's parameters and the material rendering.
+
+Add a constructor to the renderer class taking the render context as a parameter.
+
+```C#
+	public Renderer(RenderContext rc)
+	{
+		RC = rc;
+		// Initialize the shader(s)
+		var vertsh = AssetStorage.Get<string>("VertexShader.vert");
+		var pixsh = AssetStorage.Get<string>("PixelShader.frag");
+		var shader = RC.CreateShader(vertsh, pixsh);
+		RC.SetShader(shader);
+		AlbedoParam = RC.GetShaderParam(shader, "albedo");
+	}
+```
+
+Now edit the pixel shader to also calculate the specular component. The specular component needs the viewing direction which is 
+easy to calculate in camera coordinates. 
 	
 
 
