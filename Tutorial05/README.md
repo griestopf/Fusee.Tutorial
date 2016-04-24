@@ -110,7 +110,7 @@ also have a couple of different actions that should take place when traversing. 
  1. The type of the component being traversed
  2. The "reason" for traversing such as rendering, searching, picking, etc.
  
-In computer science this problem and a solution is treated under the keyword ***Visitor Pattern***, or ***Double Dispatch***. FUSEE
+In computer science this problem and its solution is treated under the keyword ***Visitor Pattern***, or ***Double Dispatch***. FUSEE
 comes with an implementation based on the classical Visitor Pattern and some extensions built around it to enable programmers
 using scenes to easily implement their own traversals and at the same time extend the set of `SceneNodeContainer` classes for 
 their own needs. These implementions around the core `SceneVisitor` class can be found in the [Fusee.Xene] (https://github.com/FUSEEProjectTeam/Fusee/tree/develop/src/Xene) subproject. You can also find some additional information in 
@@ -169,7 +169,7 @@ Of course our renderer doesn't do anything right now. But you can already observ
 ###Practice
  - Build the project. Set three breakpoints - one at the closing curly brace (`}`) of each of the visitor methods `On...()` 
    defined in our `Renderer` class. Start the program and observe the mesh, material and transform components as they
-   are visitet. 
+   are visited. 
  - While debugging, add the identifier `CurrentNode` to the Watch window. This way you can observe which *node* the currently
    visited *component* belongs to.
  - Take your sketch of the scene graph from the previous practice block (the image with the squares and circles depicting
@@ -189,14 +189,14 @@ calls `PopState()` when all nodes in a  `Children` list have been visited and th
 If we want to add our own code when these events happen, all we need to do is to override these pre-defined methods. In
 the `Renderer` class, add the following methods:
 
- 	```C#
+```C#
 	protected override void PushState()
 	{
 	}
 	protected override void PopState()
 	{
 	}
- 	```
+```
  
 So altogether we should now have five empty methods in `Renderer`.
 ###Practice
@@ -220,7 +220,7 @@ Now let's add the missing stuff to make our `Renderer` do what it should.
  - In the scene tree we have `MeshComponent` objects but the `RenderContext.Render()` method takes `Mesh` objects. The reason why these two
    types exist is that `MeshComponent` is implemented for serialization while `Mesh` is tied to the `RenderContext` class which knows
    about rendering. To allow applications to rely on the Serialization project only, these two types are kept separate. For every
-   `MaterialComponent` we encounter during traversal, we will need to create a `Mesh`. To keep the renderer from creating the same
+   `MeshComponent` we encounter during traversal, we will need to create a `Mesh`. To keep the renderer from creating the same
    `Mesh`es again and again in each rendering step, we will keep a cache of already created `Mesh`es. We will implement this using
    a `Dictionary<MeshComponent, Mesh>` object.
  - For now we will only take the diffuse color from the `MaterialComponent` objects.
@@ -342,15 +342,17 @@ Finally in `RenderAFrame` we can access this transform node before rendering and
     _wheelBigL.Rotation += new float3(-0.05f * Keyboard.WSAxis, 0, 0);
 ```
 
+Build and run the application and have fun pressing `W` and `S` to spin the front left wheel.
+
 ##More Realism by Specular Light
-Finally we want to blow up our shader to additionally handle a specular component of the light source which will add a bit more realism to the
+Now we want to blow up our shader to additionally handle a specular component of the light source which will add a bit more realism to the
 resulting images. The specular component creates highlights on the surfaces by simulating mirrors of the light source(s). To get an idea how
-the specular component is calculated, look at the following image
+the specular component is calculated, look at the following image:
 
 ![The specular component](_images/Specular.png)
 
 The specular intensity at a point on the surface is high, if the angle between the surface normal (N) to the incoming light source (L) and the 
-angle between N and the viewer (L) are nearly the same. In this situation the viewer can see a mirror image of the light source at the position 
+angle between N and the viewer (V) are nearly the same. In this situation the viewer can see a mirror image of the light source at the position 
 on the surface. To get a measure how good this mirror condition is given, we take the half-way vector between V and L and call it H. Now we
 measure the angle between H and N. If it is 0 we have a perfect mirror condition. The bigger the angle gets, the less a viewer can see the light's
 mirror image on the surface. So again, we take the dot product to get a value of 1 if the angle between the two vectors H and N is 0 and which 
