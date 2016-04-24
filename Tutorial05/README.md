@@ -108,7 +108,7 @@ Here are two traversal reasons other than rendering:
 So we now have the situation that we have a set of building blocks of different component types to build up our hierarchy and we 
 also have a couple of different actions that should take place when traversing. So the action that occurs depends on two things:
  1. The type of the component being traversed
- 2. The "reason" for traversing such as rendering, searchgin, picking, etc.
+ 2. The "reason" for traversing such as rendering, searching, picking, etc.
  
 In computer science this problem and a solution is treated under the keyword ***Visitor Pattern***, or ***Double Dispatch***. FUSEE
 comes with an implementation based on the classical Visitor Pattern and some extensions built around it to enable programmers
