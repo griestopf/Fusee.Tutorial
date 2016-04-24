@@ -448,7 +448,7 @@ Compiling and building all changes should result in the wuggy model shown with s
 ![Wuggy with Highlights](_images/WuggySpecular.png)
 
  - Visit the [result as web application]
-  (https://cdn.rawgit.com/griestopf/Fusee.Tutorial/d704a6f/Tutorial05Completed/out/Fusee.Tutorial.Web.html) 
+  (https://cdn.rawgit.com/griestopf/Fusee.Tutorial/2058f42/Tutorial05Completed/out/Fusee.Tutorial.Web.html) 
   (Ctrl-Click or Long-Press to open in new tab).
  
  - See [Tutorial.cs] (../Tutorial05Completed/Core/Tutorial.cs) in the [Tutorial05 Completed] (../Tutorial05Completed) folder for 
@@ -477,7 +477,7 @@ Compiling and building all changes should result in the wuggy model shown with s
    
    
    
-   
+
    
    
    

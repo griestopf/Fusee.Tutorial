@@ -11,4 +11,5 @@ Step-by-step tutorial to get familiar with [FUSEE] (http://www.fusee3d.org)
  
  - [Tutorial 04] (Tutorial04): Hierarchies, SceneGraph, Simple Lighting Calculation.
  
+ - [Tutorial 05] (Tutorial05): FUSEE built-in SceneGraph, Specular Lights.
 
