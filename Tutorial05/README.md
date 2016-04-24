@@ -354,7 +354,7 @@ the specular component is calculated, look at the following image:
 The specular intensity at a point on the surface is high, if the angle between the surface normal (N) to the incoming light source (L) and the 
 angle between N and the viewer (V) are nearly the same. In this situation the viewer can see a mirror image of the light source at the position 
 on the surface. To get a measure how good this mirror condition is given, we take the half-way vector between V and L and call it H. Now we
-measure the angle between H and N. If it is 0 we have a perfect mirror condition. The bigger the angle gets, the less a viewer can see the light's
+measure the angle between H and N. If it is 0 we have a perfect mirror condition. The bigger this angle gets, the less a viewer can see the light's
 mirror image on the surface. So again, we take the dot product to get a value of 1 if the angle between the two vectors H and N is 0 and which 
 will be 0 if the angle is 90°. In addition, the material can define a value called "shininess" controlling how fast the intensity should 
 go towards zero if the angle becomes bigger. Mathematically this can be achieved by taking the result of the dot product to the power of "shininess".
