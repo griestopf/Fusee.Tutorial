@@ -51,7 +51,7 @@ such as
 
 just to name a few. These components are the building blocks containing the contents a scene is made of. Not every node must contain a comlete
 set of parameters. Some nodes are just there to group other nodes, so they don't contain any component at all. Some nodes might be a group
-and at the same time allow their children to be transformed simultaneously in world space, the such a node may contain a transform component only.
+and at the same time allow their children to be transformed simultaneously in world space, then such a node may contain a transform component only.
 Other nodes contain a complete set including a mesh, a transform and a material. And as you can see, there are more types of components 
 which we will not talk about during this tutorial.
 
