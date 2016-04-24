@@ -61,7 +61,7 @@ scene containts some header information about the `.fus` file.
 
 To summarize, you can imagine the contents of a `.fus` file as the example tree in the following image:
 
-![Example Tree] (_image/SceneHierarchy.png)
+![Example Tree] (_images/SceneHierarchy.png)
 
 The orange object is the one-and-only `SceneContainer` root instance. The yellow squares are `SceneNodeContainer` objects (*nodes*) 
 and the green circles are different derivations of `SceneComponentContainer` instances (*components*).
