@@ -208,7 +208,7 @@ So altogether we should now have five empty methods in `Renderer`.
 The two newly added methods' names already show what's typically done here: We need to perform push or pop operations
 on stack-like data structures keeping track of the current traversal state. For rendering we typically need to keep track
 of the current model-view matrix. Why? Because as you remember from `RenderSceneOb`, every visited node contributes its 
-own local transformation to the overall model-view matrix. Whenever a child list is done rendering. The original model-view-matrix
+own local transformation to the overall model-view matrix. Whenever a child list is done rendering the original model-view-matrix
 needs to be restored. In our new visitor approach, the right time for restoring is in `PopState()`. But here we need to know
 what the original matrix was. We can get access to the original matrix in `PushState()`.
 
@@ -234,7 +234,7 @@ Putting it all together we will end up with a `Renderer` like that:
         public IShaderParam AlbedoParam;
         public float4x4 View;
         private Dictionary<MeshComponent, Mesh> _meshes = new Dictionary<MeshComponent, Mesh>();
-        private CollapsingStateStack<float4x4> _mv = new CollapsingStateStack<float4x4>();
+        private CollapsingStateStack<float4x4> _model = new CollapsingStateStack<float4x4>();
         private Mesh LookupMesh(MeshComponent mc)
         {
             Mesh mesh;
@@ -253,17 +253,17 @@ Putting it all together we will end up with a `Renderer` like that:
 
         protected override void InitState()
         {
-            _mv.Clear();
-            _mv.Tos = float4x4.Identity;
+            _model.Clear();
+            _model.Tos = float4x4.Identity;
         }
         protected override void PushState()
         {
-            _mv.Push();
+            _model.Push();
         }
         protected override void PopState()
         {
-            _mv.Pop();
-            RC.ModelView = View*_mv.Tos;
+            _model.Pop();
+            RC.ModelView = View * _model.Tos;
         }
         [VisitMethod]
         void OnMesh(MeshComponent mesh)
@@ -278,8 +278,8 @@ Putting it all together we will end up with a `Renderer` like that:
         [VisitMethod]
         void OnTransform(TransformComponent xform)
         {
-            _mv.Tos *= xform.Matrix();
-            RC.ModelView = View * _mv.Tos;
+            _model.Tos *= xform.Matrix();
+            RC.ModelView = View * _model.Tos;
         }
     }
 ```
@@ -297,7 +297,59 @@ Building and running this should result in the wuggy model shown.
 ![Wuggy in FUSEE](_images/WuggyInFusee.png)
 
 ###Practice
-Understand how the renderer operates
+Understand how the renderer operates. 
+ - Again, set breakpoints in all methods and step through the traversal. See how transform, mesh and material components are processed.
+ - Understand what the `RC.ModelView = View * _model.Tos;` line does. Why can we find this line in `PopState()` and in `OnTransform()`?
+ - Debug into `LookupMesh()`. what is the purpose of this method?
+ 
+##Accessing Scene Properties
+Now we have a model that has a lot of parts that should be moved. Wheels should spin. The back wheels can be used to perform steering operations.
+The camera eyes can be rotated along two (or three) axes and the camera mount can be extended. All this can be done now by changing 
+values on transform components in the scene graph from outside. 
+
+To access an individual model part, we can use a method similar to what we already used to find the Meshes in the very 
+simple .fus files from Tutorial 04, just by accessing model parts by their names. The following nodes are 
+useful candidates for changing settings on their transform components in the `wuggy.fus` file.
+
+Node Name      | Transformations   |  Purpose
+---------------|-------------------|---------------------------------
+ NeckLo        |  `Translation.y`  |  Height of lower camera mount
+---------------|-------------------|---------------------------------
+ NeckHi        |  `Translation.y`  |  Height of upper camera mount
+---------------|-------------------|---------------------------------
+ NeckHi        |  `Rotation.y`     |  Headin (Yaw) of cameras
+---------------|-------------------|---------------------------------
+ Eyes_Pitch    |  `Rotation.x`     | Up/Down rotation (Pitch) of cameras
+---------------|-------------------|---------------------------------
+ WheelBigR/L   |  `Rotation.x`     | Wheel rotation of front wheels
+---------------|-------------------|---------------------------------
+ WheelSmallR/L |  `Rotation.x`     | Wheel rotation of back wheels
+---------------|-------------------|---------------------------------
+ WheelSmallR/L |  `Rotation.y`     | Steering angle of back wheels
+
+To access the left front wheels transformation component you can declare a field to reference the transform component on the `Tutorial`
+class level:
+```C#
+    private TransformComponent _wheelBigL;
+```
+
+Then in `Init()` right after loading the `wuggy.fus` file you can find the transform component and store a reference to it using this expression:
+```C#
+	_wuggy = AssetStorage.Get<SceneContainer>("wuggy.fus");
+	_wheelBigL = _wuggy.Children.FindNodes(n => n.Name == "WheelBigL").First().GetTransform();
+```
+Translated into plain English the second line reads: "In the wuggy scene get a list of nodes called 'WheelBigL', take the first of these nodes and
+retrieve the first transform component found in this node's list of components.
+
+Finally in `RenderAFrame` we can access this transform node before rendering and add an animation to it based on the state of the `W` and `S` keys.
+```C#
+    _wheelBigL.Rotation += new float3(-0.05f * Keyboard.WSAxis, 0, 0);
+```
+
+##More Realism by 
+
+	
+
 
 
 

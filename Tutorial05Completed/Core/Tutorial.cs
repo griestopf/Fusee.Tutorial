@@ -17,7 +17,7 @@ namespace Fusee.Tutorial.Core
         public IShaderParam AlbedoParam;
         public float4x4 View;
         private Dictionary<MeshComponent, Mesh> _meshes = new Dictionary<MeshComponent, Mesh>();
-        private CollapsingStateStack<float4x4> _mv = new CollapsingStateStack<float4x4>();
+        private CollapsingStateStack<float4x4> _model = new CollapsingStateStack<float4x4>();
         private Mesh LookupMesh(MeshComponent mc)
         {
             Mesh mesh;
@@ -36,17 +36,17 @@ namespace Fusee.Tutorial.Core
 
         protected override void InitState()
         {
-            _mv.Clear();
-            _mv.Tos = float4x4.Identity;
+            _model.Clear();
+            _model.Tos = float4x4.Identity;
         }
         protected override void PushState()
         {
-            _mv.Push();
+            _model.Push();
         }
         protected override void PopState()
         {
-            _mv.Pop();
-            RC.ModelView = View*_mv.Tos;
+            _model.Pop();
+            RC.ModelView = View*_model.Tos;
         }
         [VisitMethod]
         void OnMesh(MeshComponent mesh)
@@ -61,8 +61,8 @@ namespace Fusee.Tutorial.Core
         [VisitMethod]
         void OnTransform(TransformComponent xform)
         {
-            _mv.Tos *= xform.Matrix();
-            RC.ModelView = View * _mv.Tos;
+            _model.Tos *= xform.Matrix();
+            RC.ModelView = View * _model.Tos;
         }
     }
 
@@ -71,6 +71,7 @@ namespace Fusee.Tutorial.Core
     public class Tutorial : RenderCanvas
     {
         private Mesh _mesh;
+        private TransformComponent _wheelBigL;
 
         private IShaderParam _albedoParam;
         private float _alpha = 0.001f;
@@ -110,6 +111,8 @@ namespace Fusee.Tutorial.Core
             Mesh cylinder = LoadMesh("Cylinder.fus");
             Mesh sphere = LoadMesh("Sphere.fus");
             _wuggy = AssetStorage.Get<SceneContainer>("wuggy.fus");
+            _wheelBigL = _wuggy.Children.FindNodes(n => n.Name == "WheelBigL").First().GetTransform();
+
             _renderer = new Renderer();
             _renderer.RC = RC;
             _renderer.AlbedoParam = _albedoParam;
@@ -183,13 +186,14 @@ namespace Fusee.Tutorial.Core
                 _beta  -= speed.y*0.0001f;
             }
 
+            _wheelBigL.Rotation += new float3(-0.05f * Keyboard.WSAxis, 0, 0);
+
             // Setup matrices
             var aspectRatio = Width / (float)Height;
             RC.Projection = float4x4.CreatePerspectiveFieldOfView(3.141592f * 0.25f, aspectRatio, 0.01f, 20);
             float4x4 view = float4x4.CreateTranslation(0, 0, 5)*float4x4.CreateRotationY(_alpha)*float4x4.CreateRotationX(_beta)*float4x4.CreateTranslation(0, -0.5f, 0);
             _renderer.View = view;
             _renderer.Traverse(_wuggy.Children);
-
 
             // Swap buffers: Show the contents of the backbuffer (containing the currently rendered frame) on the front buffer.
             Present();
