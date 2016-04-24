@@ -15,6 +15,7 @@ namespace Fusee.Tutorial.Core
     {
         public RenderContext RC;
         public IShaderParam AlbedoParam;
+        public IShaderParam ShininessParam;
         public float4x4 View;
         private Dictionary<MeshComponent, Mesh> _meshes = new Dictionary<MeshComponent, Mesh>();
         private CollapsingStateStack<float4x4> _model = new CollapsingStateStack<float4x4>();
@@ -32,6 +33,18 @@ namespace Fusee.Tutorial.Core
                 _meshes[mc] = mesh;
             }
             return mesh;
+        }
+
+        public Renderer(RenderContext rc)
+        {
+            RC = rc;
+            // Initialize the shader(s)
+            var vertsh = AssetStorage.Get<string>("VertexShader.vert");
+            var pixsh = AssetStorage.Get<string>("PixelShader.frag");
+            var shader = RC.CreateShader(vertsh, pixsh);
+            RC.SetShader(shader);
+            AlbedoParam = RC.GetShaderParam(shader, "albedo");
+            ShininessParam = RC.GetShaderParam(shader, "shininess");
         }
 
         protected override void InitState()
@@ -57,6 +70,7 @@ namespace Fusee.Tutorial.Core
         void OnMaterial(MaterialComponent material)
         {
             RC.SetShaderParam(AlbedoParam, material.Diffuse.Color);
+            RC.SetShaderParam(ShininessParam, material.Specular.Shininess);
         }
         [VisitMethod]
         void OnTransform(TransformComponent xform)
@@ -98,14 +112,6 @@ namespace Fusee.Tutorial.Core
         // Init is called on startup. 
         public override void Init()
         {
-            var vertsh = AssetStorage.Get<string>("VertexShader.vert");
-            var pixsh = AssetStorage.Get<string>("PixelShader.frag");
-
-            // Initialize the shader(s)
-            var shader = RC.CreateShader(vertsh, pixsh);
-            RC.SetShader(shader);
-            _albedoParam = RC.GetShaderParam(shader, "albedo");
-
             // Load some meshes
             Mesh cube = LoadMesh("Cube.fus");
             Mesh cylinder = LoadMesh("Cylinder.fus");
@@ -113,9 +119,7 @@ namespace Fusee.Tutorial.Core
             _wuggy = AssetStorage.Get<SceneContainer>("wuggy.fus");
             _wheelBigL = _wuggy.Children.FindNodes(n => n.Name == "WheelBigL").First().GetTransform();
 
-            _renderer = new Renderer();
-            _renderer.RC = RC;
-            _renderer.AlbedoParam = _albedoParam;
+            _renderer = new Renderer(RC);
 
             // Setup a list of objects
             _root = new SceneOb { 

@@ -361,7 +361,7 @@ less glossy materials.
 To start, we want to move all the shader related stuff from our `Init()` method to the `Renderer` since here we have a closer relation between 
 the shader's parameters and the material rendering.
 
-Add a constructor to the renderer class taking the render context as a parameter.
+Add a constructor to the renderer class taking the render context as a parameter and remove all the shader initialization from `Init()`
 
 ```C#
 	public Renderer(RenderContext rc)
@@ -373,14 +373,103 @@ Add a constructor to the renderer class taking the render context as a parameter
 		var shader = RC.CreateShader(vertsh, pixsh);
 		RC.SetShader(shader);
 		AlbedoParam = RC.GetShaderParam(shader, "albedo");
+		ShiniessParam = RC.GetShaderParam(shader, "shininess");
 	}
 ```
 
-Now edit the pixel shader to also calculate the specular component. The specular component needs the viewing direction which is 
-easy to calculate in camera coordinates. 
+We already took care to handle another shader parameter called "shininess". Don't forget to declare the field `IShaderParam ShiniessParam` at
+the class level of `Renderer`. 
+
+Now we can apply a couple of changes to the pixel and the vertex shader:
+
+ - The Vertex Shader now needs to supply the position of the vertex in View coordinates because the Pixel Shader needs the position of the pixel
+   in question given in view coordinates. Thus the Vertex Shader needs to transform the incoming vertex with the ModelView matrix and store
+   the result in a `varying` variable called `viewpos`.
+ - The pixel shader takes the interpolated `viewpos` which then holds the position of the pixel currently calculated in view coordinates. 
+ - The pixel shader needs a more accurate version of the normal. Thus the normal is normalized.
+ - The specular intensity is calculated as described avbove.
+ - Finally the specular intensity is added to all color channels thus highlighting the calculated pixel.
+ 
+Here are the resulting vertex and pixel shader
+
+
+Vertex Shader
+```C++
+	attribute vec3 fuVertex;
+	attribute vec3 fuNormal;
+	uniform mat4 FUSEE_MVP;
+	uniform mat4 FUSEE_MV;
+	uniform mat4 FUSEE_ITMV;
+	varying vec3 viewpos;
+	varying vec3 normal;
+
+	void main()
+	{
+		normal = normalize(mat3(FUSEE_ITMV) * fuNormal);
+		viewpos = (FUSEE_MV * vec4(fuVertex, 1.0)).xyz;
+		gl_Position = FUSEE_MVP * vec4(fuVertex, 1.0);
+	}
+```
+
+Pixel Shader
+```C++
+#ifdef GL_ES
+    precision highp float;
+#endif
+varying vec3 viewpos;
+varying vec3 normal;
+uniform vec3 albedo;
+uniform float shininess;
+uniform float specfactor;
+
+void main()
+{
+	vec3 nnormal = normalize(normal);
 	
+	// Diffuse
+	vec3 lightdir = vec3(0, 0, -1);
+    float intensityDiff = dot(nnormal, lightdir);
 
+	// Specular
+    float intensitySpec = 0.0;
+	if (intensityDiff > 0.0)
+	{
+		vec3 viewdir = -viewpos;
+		vec3 h = normalize(viewdir+lightdir);
+		intensitySpec = pow(max(0.0, dot(h, nnormal)), shininess);
+	}
 
+    gl_FragColor = vec4(intensityDiff * albedo + vec3(intensitySpec), 1);
+}
+```
+
+Compiling and building all changes should result in the wuggy model shown with somehow exaggerated highlights:
+
+![Wuggy with Highlights](_images/WuggySpecular.png)
+
+ - Visit the [result as web application]
+  (https://cdn.rawgit.com/griestopf/Fusee.Tutorial/d704a6f/Tutorial05Completed/out/Fusee.Tutorial.Web.html) 
+  (Ctrl-Click or Long-Press to open in new tab).
+ 
+ - See [Tutorial.cs] (../Tutorial05Completed/Core/Tutorial.cs) in the [Tutorial05 Completed] (../Tutorial05Completed) folder for 
+   the overall state so far.
+
+##Exercise
+
+ - Toy around with the specular and diffuse components in the pixel shader. Try displaying the specular component only. 
+   Let the user interactively change the shininess component with some keys and see what happens.
+
+ - Use the material properties `Specular.Intensity` and `Specular.Color` to reduce the highlights to the settings
+   found in the material of the `.fus` file.
+   
+ - Create a small application allowing users to drive the wuggy model around
+   - Make the wheels spin correctly according to their size and the speed of wuggy over ground
+   - Make the back wheels turn according to left/right steering commands.
+   - Make the cameras turn to focus a fixed position (e.g. the user). 
+   - Allow the user to extend/shrink the camera mount using buttons.
+   
+ - Advanced: Instead of a parallel light shining in viewing direction, change the calculation to a point light
+   (specified in view coordinates as a vec3 uniform variable) Animate the light position to see what`s happening.
 
 
    
