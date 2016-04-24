@@ -42,20 +42,63 @@ and you will notice that its declaration is very short: Besides a name, each nod
 
  2. A list of child nodes - this is how a hierarchy can be built just with our DIYS-`SceneObs
   
-Let's talk about components a little bit. In the `Fusee.Serialization` project you can find a lot of classes derived from `SceneComponentContainer`, 
+Let's talk about components a little bit. In the `Fusee.Serialization` project you can find a lot of classes derived from `SceneComponentContainer`
 such as
 
- - MeshComponent - you already dealt with it in Tutorial 04
- - TransformComponent
+ - `MeshComponent` - you already dealt with it in Tutorial 04
+ - `TransformComponent` - contains a position, rotation and scale information
+ - `MaterialComponent` - contains a material description (e.g. a color)
+
+just to name a few. These components are the building blocks containing the contents a scene is made of. Not every node must contain a comlete
+set of parameters. Some nodes are just there to group other nodes, so they don't contain any component at all. Some nodes might be a group
+and at the same time allow their children to be transformed simultaneously in world space, the such a node may contain a transform component only.
+Other nodes contain a complete set including a mesh, a transform and a material. And as you can see, there are more types of components 
+which we will not talk about during this tutorial.
+
+On the outermost level of a `.fus` file there is always one `SceneContainer` object making the "root" of the tree. We will simply call it
+a *scene*. It contains a list of `Children` of `SceneNodeContainer` objects. This is the list of nodes at the root level. In a addition a 
+scene containts some header information about the `.fus` file.
+
+To summarize, you can imagine the contents of a `.fus` file as the example tree in the following image:
+
+![Example Tree] (_image/SceneHierarchy.png)
+
+The orange object is the one-and-only `SceneContainer` root instance. The yellow squares are `SceneNodeContainer` objects (*nodes*) 
+and the green circles are different derivations of `SceneComponentContainer` instances (*components*).
+
+The numbers are the order in which a traversal will visit each node and component. 
 
 
-
-
+Now let's look at an example of a scene. The following image is a hierarchical model created in CINEMA 4D, a commercial 3D modelling software:
 
 ![Wuggy 3D Model](_images/WuggyModel.png)
 
+Here you can see the scene graph inside the modelling software:
 
 ![Wuggy Scene Graph](_images/WuggySceneGraph.png)
 
+Now we want to load this scene in our source code. Add the model file 'wuggy.fus' to the Assets sub folder in the `Fusee.Tutorial05.Core`
+project and don't forget to set its properties to `Content` and `Copy if newer`. Add the following loading code to the `Init()` method of the `Tutorial` class in [Tutorial.cs] (Core/Tutorial.cs).
+
+```C#
+   SceneContainer wuggy = AssetStorage.Get<SceneContainer>("wuggy.fus");
+```
+
+Compile the code and set a breakpoint to the line right after the above. Starting the tutorial in the debugger will break at the position right
+after deserializing the contents of `wuggy.fus` into an object tree. Drag the `wuggy` variable into the debugger's watch window and inspect
+its contents:
 
 ![Wuggy in the debugger's Watch window](_images/WuggyDebugWatch.png)
+
+###Practice
+ - Draw an image of the hierarchy contained in `wuggy` using squares and circles like the image above.
+ - Convince yourself about the 1:1 connection of the hierarchy in the `wuggy` variable and the scene graph image from the modelling software   
+   above.
+ - Look inside the various Components. What information is contained in the `MaterialComponent`, `TransformComponent` and `MeshComponent` types?
+ 
+ 
+##Rendering with a Visitor 
+To render a scene like the one stored in `wuggy` we need to *recursively* traverse all `Children` of the root `SceneContainer`. We already 
+implemented a simple traversal 
+
+ 
