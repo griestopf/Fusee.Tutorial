@@ -314,17 +314,11 @@ useful candidates for changing settings on their transform components in the `wu
 Node Name      | Transformations   |  Purpose
 ---------------|-------------------|---------------------------------
  NeckLo        |  `Translation.y`  |  Height of lower camera mount
----------------|-------------------|---------------------------------
  NeckHi        |  `Translation.y`  |  Height of upper camera mount
----------------|-------------------|---------------------------------
  NeckHi        |  `Rotation.y`     |  Headin (Yaw) of cameras
----------------|-------------------|---------------------------------
  Eyes_Pitch    |  `Rotation.x`     | Up/Down rotation (Pitch) of cameras
----------------|-------------------|---------------------------------
  WheelBigR/L   |  `Rotation.x`     | Wheel rotation of front wheels
----------------|-------------------|---------------------------------
  WheelSmallR/L |  `Rotation.x`     | Wheel rotation of back wheels
----------------|-------------------|---------------------------------
  WheelSmallR/L |  `Rotation.y`     | Steering angle of back wheels
 
 To access the left front wheels transformation component you can declare a field to reference the transform component on the `Tutorial`
