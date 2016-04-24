@@ -92,13 +92,106 @@ its contents:
 
 ###Practice
  - Draw an image of the hierarchy contained in `wuggy` using squares and circles like the image above.
- - Convince yourself about the 1:1 connection of the hierarchy in the `wuggy` variable and the scene graph image from the modelling software   
-   above.
+ - Convince yourself about the 1:1 connection of the hierarchy in the `wuggy` variable and the scene 
+   graph image from the modelling software above.
  - Look inside the various Components. What information is contained in the `MaterialComponent`, `TransformComponent` and `MeshComponent` types?
  
  
 ##Rendering with a Visitor 
 To render a scene like the one stored in `wuggy` we need to *recursively* traverse all `Children` of the root `SceneContainer`. We already 
-implemented a simple traversal 
+implemented a simple rendering traversal with our `RenderSceneOb()` method. But rendering is not the only purpose to traverse a scene. 
+Here are two traversal reasons other than rendering:
+ - Find a node or component based on some search criterion (e.g. all nodes with a certain name, all meshes with more than 50 triangles, etc.)
+ - Picking - finding all meshes and nodes under a given position or withtin a rectangular range given in screen space, such as 
+   the current mouse position.
+
+So we now have the situation that we have a set of building blocks of different component types to build up our hierarchy and we 
+also have a couple of different actions that should take place when traversing. So the action that occurs depends on two things:
+ 1. The type of the component being traversed
+ 2. The "reason" for traversing such as rendering, searchgin, picking, etc.
+ 
+In computer science this problem and a solution is treated under the keyword ***Visitor Pattern***, or ***Double Dispatch***. FUSEE
+comes with an implementation based on the classical Visitor Pattern and some extensions built around it to enable programmers
+using scenes to easily implement their own traversals and at the same time extend the set of `SceneNodeContainer` classes for 
+their own needs. These implementions around the core `SceneVisitor` class can be found in the [Fusee.Xene] (https://github.com/FUSEEProjectTeam/Fusee/tree/develop/src/Xene) subproject. You can also find some additional information in 
+the [Fusee.Xene.md] (https://github.com/FUSEEProjectTeam/Fusee/blob/develop/src/Xene/Fusee.Xene.md) document.
+
+To Implement your own Rendering Visitor you should do the following.
+ 
+ 1. Create a class derived from `Fusee.Xene.SceneVisitor` and add three visitor methods for mesh, transform and material
+    components:
+
+	```C#
+	class Renderer : SceneVisitor
+    {
+        [VisitMethod]
+        public void OnMesh(MeshComponent mesh)
+        {
+        }
+        [VisitMethod]
+        public void OnMaterial(MaterialComponent material)
+        {
+        }
+        [VisitMethod]
+        public void OnTransform(TransformComponent xform)
+        {
+        }
+    }
+	```
+
+	The name of the class as well as the name of the methods may vary. Note how the methods are attributed with the
+	`VisitMethod` attribute and how methods vary in the different parameter types all derived from `SceneComponentContainer`.
+	
+ 2. Add two fields to the `Tutorial` class: One to keep the `_wuggy` scene and another one to keep an instance of our newly
+    created `Renderer`:
+	
+	```C#
+	    private SceneContainer _wuggy;
+        private Renderer _renderer;
+	```
+	
+ 3. In the `Init()` method load the contents of wuggy.fus into the `_wuggy` field and initiate an instance of our `Renderer`:
+
+ 	```C#
+		_wuggy = AssetStorage.Get<SceneContainer>("wuggy.fus");
+		_renderer = new Renderer();
+	```
+
+ 4. In the `RenderAFrame()` method, somwhere between `Clear()`ing the back buffer and `Present()`ing the contents to the front
+    buffer, use our `Renderer` to traverse the wuggy scene:
+	
+	
+		
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
 
  

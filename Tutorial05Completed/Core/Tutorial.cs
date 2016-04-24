@@ -11,6 +11,24 @@ using static Fusee.Engine.Core.Input;
 namespace Fusee.Tutorial.Core
 {
 
+    class Renderer : SceneVisitor
+    {
+        [VisitMethod]
+        void OnMesh(MeshComponent mesh)
+        {
+        }
+        [VisitMethod]
+        void OnMaterial(MaterialComponent material)
+        {
+        }
+
+        [VisitMethod]
+        void OnTransform(TransformComponent xform)
+        {
+        }
+    }
+
+
     [FuseeApplication(Name = "Tutorial Example", Description = "The official FUSEE Tutorial.")]
     public class Tutorial : RenderCanvas
     {
@@ -21,6 +39,7 @@ namespace Fusee.Tutorial.Core
         private float _beta;
 
         private SceneOb _root;
+        private Renderer _renderer;
 
 
         public static Mesh LoadMesh(string assetName)
@@ -34,6 +53,7 @@ namespace Fusee.Tutorial.Core
                 Triangles = mc.Triangles
             };
         }
+
 
         // Init is called on startup. 
         public override void Init()
@@ -51,7 +71,10 @@ namespace Fusee.Tutorial.Core
             Mesh cylinder = LoadMesh("Cylinder.fus");
             Mesh sphere = LoadMesh("Sphere.fus");
             SceneContainer wuggy = AssetStorage.Get<SceneContainer>("wuggy.fus");
-            
+
+            _renderer = new Renderer();
+            _renderer.Traverse(wuggy.Children);
+
             // Setup a list of objects
             _root = new SceneOb { 
                 Children = new List<SceneOb>(new []
