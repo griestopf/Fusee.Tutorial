@@ -95,87 +95,17 @@ namespace Fusee.Tutorial.Core
         private SceneContainer _wuggy;
         private Renderer _renderer;
 
-
-        public static Mesh LoadMesh(string assetName)
-        {
-            SceneContainer sc = AssetStorage.Get<SceneContainer>(assetName);
-            MeshComponent mc = sc.Children.FindComponents<MeshComponent>(c => true).First();
-            return new Mesh
-            {
-                Vertices = mc.Vertices,
-                Normals = mc.Normals,
-                Triangles = mc.Triangles
-            };
-        }
-
-
         // Init is called on startup. 
         public override void Init()
         {
             // Load some meshes
-            Mesh cube = LoadMesh("Cube.fus");
-            Mesh cylinder = LoadMesh("Cylinder.fus");
-            Mesh sphere = LoadMesh("Sphere.fus");
             _wuggy = AssetStorage.Get<SceneContainer>("wuggy.fus");
             _wheelBigL = _wuggy.Children.FindNodes(n => n.Name == "WheelBigL").First().GetTransform();
-
             _renderer = new Renderer(RC);
-
-            // Setup a list of objects
-            _root = new SceneOb { 
-                Children = new List<SceneOb>(new []
-                {
-                    // Body
-                    new SceneOb { Mesh = cube,     Pos = new float3(0, 2.75f, 0),     ModelScale = new float3(0.5f, 1, 0.25f),      Albedo = new float3(0.2f, 0.6f, 0.3f) },
-                    // Legs
-                    new SceneOb { Mesh = cylinder, Pos = new float3(-0.25f, 1, 0),    ModelScale = new float3(0.15f, 1, 0.15f),     },
-                    new SceneOb { Mesh = cylinder, Pos = new float3( 0.25f, 1, 0),    ModelScale = new float3(0.15f, 1, 0.15f),     },
-                    // Shoulders
-                    new SceneOb { Mesh = sphere,   Pos = new float3(-0.75f, 3.5f, 0), ModelScale = new float3(0.25f, 0.25f, 0.25f), },
-                    new SceneOb { Mesh = sphere,   Pos = new float3( 0.75f, 3.5f, 0), ModelScale = new float3(0.25f, 0.25f, 0.25f), },
-                    // Arms
-                    new SceneOb { Mesh = cylinder, Pos = new float3(-0.75f, 2.5f, 0), ModelScale = new float3(0.15f, 1, 0.15f),     },
-                    new SceneOb { Mesh = cylinder, Pos = new float3( 0.75f, 2.5f, 0), ModelScale = new float3(0.15f, 1, 0.15f),     },
-                    // Head
-                    new SceneOb
-                    {
-                        Mesh = sphere,   Pos = new float3(0, 4.2f, 0),      ModelScale = new float3(0.35f, 0.5f, 0.35f),  
-                        Albedo = new float3(0.9f, 0.6f, 0.5f)
-                    },
-                })};
 
             // Set the clear color for the backbuffer
             RC.ClearColor = new float4(1, 1, 1, 1);
         }
-
-        static float4x4 ModelXForm(float3 pos, float3 rot, float3 pivot)
-        {
-            return float4x4.CreateTranslation(pos + pivot)
-                   *float4x4.CreateRotationY(rot.y)
-                   *float4x4.CreateRotationX(rot.x)
-                   *float4x4.CreateRotationZ(rot.z)
-                   *float4x4.CreateTranslation(-pivot);
-        }
-
-        void RenderSceneOb(SceneOb so, float4x4 modelView)
-        {
-            modelView = modelView * ModelXForm(so.Pos, so.Rot, so.Pivot) * float4x4.CreateScale(so.Scale);
-            if (so.Mesh != null)
-            {
-                RC.ModelView = modelView*float4x4.CreateScale(so.ModelScale);
-                RC.SetShaderParam(_albedoParam, so.Albedo);
-                RC.Render(so.Mesh);
-            }
-
-            if (so.Children != null)
-            {
-                foreach (var child in so.Children)
-                {
-                    RenderSceneOb(child, modelView);
-                }
-            }
-        }
-
 
         // RenderAFrame is called once a frame
         public override void RenderAFrame()
