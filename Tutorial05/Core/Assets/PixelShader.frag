@@ -7,6 +7,6 @@ uniform vec3 albedo;
 
 void main()
 {
-    float intensity = dots(normal, vec3(0, 0, -1));
+    float intensity = dot(normal, vec3(0, 0, -1));
     gl_FragColor = vec4(intensity * albedo, 1);
 }
