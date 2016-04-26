@@ -284,6 +284,17 @@ Putting it all together we will end up with a `Renderer` like that:
     }
 ```
 
+
+Inside `Init()` initialize some of the new renderer properties AFTER the shader initialization
+```C#
+	RC.SetShader(shader);
+	_albedoParam = RC.GetShaderParam(shader, "albedo");	
+	
+	_renderer.RC = RC;
+	_renderer.AlbedoParam = _albedoParam;
+```
+
+
 Inside `RenderAFrame()` remove rendering the `SceneOb`s from Tutorial 04 and setup the view matrix and pass it to the `Renderer` like so
 ```C#
 	float4x4 view = float4x4.CreateTranslation(0, 0, 5)*float4x4.CreateRotationY(_alpha)*float4x4.CreateRotationX(_beta)*
@@ -377,11 +388,20 @@ Add a constructor to the renderer class taking the render context as a parameter
 		var shader = RC.CreateShader(vertsh, pixsh);
 		RC.SetShader(shader);
 		AlbedoParam = RC.GetShaderParam(shader, "albedo");
-		ShiniessParam = RC.GetShaderParam(shader, "shininess");
+		ShininessParam = RC.GetShaderParam(shader, "shininess");
 	}
 ```
 
-We already took care to handle another shader parameter called "shininess". Don't forget to declare the field `IShaderParam ShiniessParam` at
+In the `OnMaterial()` method read the shininess out of the existing material definition method and set the shininess parameter:
+```C#
+	void OnMaterial(MaterialComponent material)
+	{
+		RC.SetShaderParam(AlbedoParam, material.Diffuse.Color);
+		RC.SetShaderParam(ShininessParam, material.Specular.Shininess);
+	}
+```
+
+As we now we handle another shader parameter called "shininess", don't forget to declare the field `IShaderParam ShininessParam` at
 the class level of `Renderer`. 
 
 Now we can apply a couple of changes to the pixel and the vertex shader:
