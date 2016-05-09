@@ -45,6 +45,17 @@ But let's look at the things that additionally changed under the hood.
    handling / Pixel Shader ignored the emissive component?
  - Also watch the contents of the `material` component currently visited. What other 
    information is contained here which is currently NOT handled?
+
+###A Hint on Debugging
+Since we are using FUSEE's built-in `Visitor` to traverse the scene graph, the debugger
+will end up at some awkward code place deep in FUSEE whenever a run-time error occurs
+during scene traversal in one of our `On...()` visitor methods.
+
+You can change this behavior in Visual Studio by opening the Debug->Windows->Exception Settings 
+window and check the 'Common Language Runtime Exception' group. Now your application might 
+report Exceptions on startup (e.g. in OpenTK). You can selectively ignore these exceptions as
+they appear in the Exception Details window. As a result, you should end-up at more specific
+places with a traceable stack back to your own `On...()` visitor method causing the exception.  
    
 ##Adding texture information
 In `WuggyLand.fus`, the green parts of the tree models are already prepared
@@ -66,7 +77,8 @@ models. To do this, we have to accomplish two things:
 
  1. Allow the PixelShader to access the pixels inside `Leaves.jpg`.
  2. Tell the PixelShader for each screen pixel (a.k.a "Fragment") it is about
-    to render, which pixel from `Leaves.jpg` it should take as the `albedo`.
+    to render, which pixel from the texture `Leaves.jpg` (a.k.a "Texel") it should take 
+    as the `albedo`.
     
 ###Textures are `uniform` Shader Parameters
 Everything that controlled the process how a vertex shader proceesses coordinates or how
@@ -170,9 +182,85 @@ FUSEE has some functionality we can use to do this. Perform the following steps:
         RC.SetShaderParam(TexMixParam, 0.0f);
     }
    ```
+Building and running the solution should result in no changes as the corner we are taking the color
+information from is nearly the same as the overall diffuse color of the treetop objects' materials.
 
+###Practice
+ - Create a spare copy `Leaves.jpg`, open the original in an image editing software and assign a color other than
+   green to the lower left corner of the image. Save the image and rebuild the application to see the 
+   tree tops appear entirly in that color.
+ - Just to use other texture coordinates that the original: use the normalized normal's x and y 
+   as texture coordinates and try to explan yourself what you see as a result.
 
 ###Texture Coordinates
+Instead of constantly reading the lower left pixel of our image we now we want to read out 
+the correct pixel from the image texture. Typically, the information how a texture is applied 
+to an object is stored with the object's vertices in so called ***Texture Coordinates***.
+Every vertex contains a two-dimensioal set of texture coordinates (mostly in the range of [0...1]). 
+So the model itself contains this mapping information (often called uv-coordinates, or UVs). The
+following image shows how a vertex has a set of UV coordinates attached (0.5; 0.5)  and how
+this value identifies a pixel position in the texture.
+
+![A single vertex with its UV coordinate](_images/SingleVertexUv.png)
+
+Once a triangle is rendered, a texture coordinate for every pixel of the triangle can be
+interpolated from the texture coordinates at the three vertices of the triangle based on the
+relative position of the pixel to the triangle's vertices. This interpolation happens exactly 
+in the same way we are interpolating normals: As part of the interpolation funcionality 
+that handles every varying parameter passed from the vertex shader to the pixel shader.
+
+This way, any position on the surface has a texture coordinate attached to. Just imagne how
+every 3D-triangle of your geometry is mapped to a 2D-triangle in UV space.
+
+![A triangle mapped to 2D UV space](_images/TriangleInUv.png)
+ 
+So all we need to do to get access to the UV coordinates provided with the model and
+pass it through to the vertex shader. From there put the UV coordinate unchanged into
+a varying variable thus passing it on to the pixel shader where we can use it already
+interpolated for the screen-pixel we are currently called for.
+
+In code:
+ - In the `LookupMesh()` method where we transform a deserialized `MeshComponent`into 
+   a renderable `Mesh`, just add a single line copying the texture- (UV-) coordinates:
+   ```C#
+    mesh = new Mesh
+    {
+        Vertices = mc.Vertices,
+        Normals = mc.Normals,
+        UVs = mc.UVs,
+        Triangles = mc.Triangles,
+    };
+   ```
+    
+ - In the vertex shader, add an `attribute vec2 fuUV`, a `varying vec2 uv` and 
+   single line copying `fuUV´ to `uv`. The entire vertex shader should look like this:
+   ```C#
+    attribute vec3 fuVertex;
+    attribute vec3 fuNormal;
+    attribute vec2 fuUV;
+    uniform mat4 FUSEE_MVP;
+    uniform mat4 FUSEE_MV;
+    uniform mat4 FUSEE_ITMV;
+    varying vec3 normal;
+    varying vec3 viewpos;
+    varying vec2 uv;
+
+    void main()
+    {
+        normal = normalize(mat3(FUSEE_ITMV) * fuNormal);
+        viewpos = (FUSEE_MV * vec4(fuVertex, 1.0)).xyz;
+      	uv = fuUV;
+        gl_Position = FUSEE_MVP * vec4(fuVertex, 1.0);
+    }
+   ``` 
+ - Finally in the pixel shader, also declare `varying vec2 uv` and replace `vec(0, 0)` as 
+   the parameter to `texture2D()` with `uv`.
+     
+Rebuild everything and run it. After all you should be able to explore WuggyLand's flora with
+its unique foliage:
+
+![WuggyLand with foliage](_images/WuggyLandFoliage.png)
+
 
    
     

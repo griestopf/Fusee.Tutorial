@@ -37,7 +37,8 @@ namespace Fusee.Tutorial.Core
                 {
                     Vertices = mc.Vertices,
                     Normals = mc.Normals,
-                    Triangles = mc.Triangles
+                    UVs = mc.UVs,
+                    Triangles = mc.Triangles,
                 };
                 _meshes[mc] = mesh;
             }

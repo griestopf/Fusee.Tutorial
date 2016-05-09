@@ -3,6 +3,7 @@
 #endif
 varying vec3 viewpos;
 varying vec3 normal;
+varying vec2 uv;
 uniform vec3 albedo;
 uniform float shininess;
 uniform float specfactor;
@@ -18,7 +19,7 @@ void main()
 	// Diffuse
 	vec3 lightdir = vec3(0, 0, -1);
     float intensityDiff = dot(nnormal, lightdir);
-	vec3 resultingAlbedo = (1.0-texmix) * albedo + texmix * vec3(texture2D(texture, vec2(0, 0)));
+	vec3 resultingAlbedo = (1.0-texmix) * albedo + texmix * vec3(texture2D(texture, uv));
 
 	// Specular
     float intensitySpec = 0.0;
