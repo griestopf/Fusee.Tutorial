@@ -274,7 +274,7 @@ allows to define effects in a convenient way.
 The final stage of this tutorial uses a shader effect instead of a simple shader. 
 
  - Visit the [result as web application]
-  (https://cdn.rawgit.com/griestopf/Fusee.Tutorial/xxxx/Tutorial06Completed/out/Fusee.Tutorial.Web.html) 
+  (https://cdn.rawgit.com/griestopf/Fusee.Tutorial/b0120f7/Tutorial06Completed/out/Fusee.Tutorial.Web.html) 
   (Ctrl-Click or Long-Press to open in new tab).
  
  - See [Tutorial.cs] (../Tutorial06Completed/Core/Tutorial.cs) in the [Tutorial06 Completed] (../Tutorial06Completed) folder for 
