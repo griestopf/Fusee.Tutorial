@@ -16,14 +16,9 @@ namespace Fusee.Tutorial.Core
 
     class Renderer : SceneVisitor
     {
+        public ShaderEffect ShaderEffect;
+
         public RenderContext RC;
-        private IShaderParam AlbedoParam;
-        private IShaderParam ShininessParam;
-        private IShaderParam SpecFactorParam;
-        private IShaderParam SpecColorParam;
-        private IShaderParam AmbientColorParam;
-        private IShaderParam TextureParam;
-        private IShaderParam TexMixParam;
         private ITexture _leafTexture;
         public float4x4 View;
         private Dictionary<MeshComponent, Mesh> _meshes = new Dictionary<MeshComponent, Mesh>();
@@ -48,24 +43,37 @@ namespace Fusee.Tutorial.Core
         public Renderer(RenderContext rc)
         {
             RC = rc;
-            // Initialize the shader(s)
-            var vertsh = AssetStorage.Get<string>("VertexShader.vert");
-            var pixsh = AssetStorage.Get<string>("PixelShader.frag");
-            var shader = RC.CreateShader(vertsh, pixsh);
-            RC.SetShader(shader);
-
-            AlbedoParam = RC.GetShaderParam(shader, "albedo");
-            ShininessParam = RC.GetShaderParam(shader, "shininess");
-            SpecFactorParam = RC.GetShaderParam(shader, "specfactor");
-            SpecColorParam = RC.GetShaderParam(shader, "speccolor");
-            AmbientColorParam = RC.GetShaderParam(shader, "ambientcolor");
-            TextureParam = RC.GetShaderParam(shader, "texture");
-            TexMixParam = RC.GetShaderParam(shader, "texmix");
-
             // Read the Leaves.jpg image and upload it to the GPU
             ImageData leaves = AssetStorage.Get<ImageData>("Leaves.jpg");
             _leafTexture = RC.CreateTexture(leaves);
 
+            // Initialize the shader(s)
+            ShaderEffect = new ShaderEffect(
+
+                new[]
+                {
+                    new EffectPassDeclaration
+                    {
+                        VS = AssetStorage.Get<string>("VertexShader.vert"),
+                        PS = AssetStorage.Get<string>("PixelShader.frag"),
+                        StateSet = new RenderStateSet
+                        {
+                            ZEnable = true,
+                            CullMode = Cull.Counterclockwise,
+                        }
+                    }
+                },
+                new[]
+                {
+                    new EffectParameterDeclaration {Name = "albedo", Value = float3.One},
+                    new EffectParameterDeclaration {Name = "shininess", Value = 1.0f},
+                    new EffectParameterDeclaration {Name = "specfactor", Value= 1.0f},
+                    new EffectParameterDeclaration {Name = "speccolor", Value = float3.Zero},
+                    new EffectParameterDeclaration {Name = "ambientcolor", Value = float3.Zero},
+                    new EffectParameterDeclaration {Name = "texture", Value = _leafTexture},
+                    new EffectParameterDeclaration {Name = "texmix", Value = 0.0f},
+                });
+            ShaderEffect.AttachToContext(RC);
         }
 
         protected override void InitState()
@@ -85,47 +93,48 @@ namespace Fusee.Tutorial.Core
         [VisitMethod]
         void OnMesh(MeshComponent mesh)
         {
-            RC.Render(LookupMesh(mesh));
+            ShaderEffect.RenderMesh(LookupMesh(mesh));
+            // RC.Render(LookupMesh(mesh));
         }
         [VisitMethod]
         void OnMaterial(MaterialComponent material)
         {
             if (material.HasDiffuse)
             {
-                RC.SetShaderParam(AlbedoParam, material.Diffuse.Color);
+                ShaderEffect.SetEffectParam("albedo", material.Diffuse.Color);
                 if (material.Diffuse.Texture == "Leaves.jpg")
                 {
-                    RC.SetShaderParamTexture(TextureParam, _leafTexture);
-                    RC.SetShaderParam(TexMixParam, 1.0f);
+                    ShaderEffect.SetEffectParam("texture", _leafTexture);
+                    ShaderEffect.SetEffectParam("texmix", 1.0f);
                 }
                 else
                 {
-                    RC.SetShaderParam(TexMixParam, 0.0f);
+                    ShaderEffect.SetEffectParam("texmix", 0.0f);
                 }
             }
             else
             {
-                RC.SetShaderParam(AlbedoParam, float3.Zero);
+                ShaderEffect.SetEffectParam("albedo", float3.Zero);
             }
             if (material.HasSpecular)
             {
-                RC.SetShaderParam(ShininessParam, material.Specular.Shininess);
-                RC.SetShaderParam(SpecFactorParam, material.Specular.Intensity);
-                RC.SetShaderParam(SpecColorParam, material.Specular.Color);
+                ShaderEffect.SetEffectParam("shininess", material.Specular.Shininess);
+                ShaderEffect.SetEffectParam("specfactor", material.Specular.Intensity);
+                ShaderEffect.SetEffectParam("speccolor", material.Specular.Color);
             }
             else
             {
-                RC.SetShaderParam(ShininessParam, 0);
-                RC.SetShaderParam(SpecFactorParam, 0);
-                RC.SetShaderParam(SpecColorParam, float3.Zero);
+                ShaderEffect.SetEffectParam("shininess", 0);
+                ShaderEffect.SetEffectParam("specfactor", 0);
+                ShaderEffect.SetEffectParam("speccolor", float3.Zero);
             }
             if (material.HasEmissive)
             {
-                RC.SetShaderParam(AmbientColorParam, material.Emissive.Color);
+                ShaderEffect.SetEffectParam("ambientcolor", material.Emissive.Color);
             }
             else
             {
-                RC.SetShaderParam(AmbientColorParam, float3.Zero);
+                ShaderEffect.SetEffectParam("ambientcolor", float3.Zero);
             }
         }
         [VisitMethod]

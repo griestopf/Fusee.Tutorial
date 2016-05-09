@@ -261,7 +261,92 @@ its unique foliage:
 
 ![WuggyLand with foliage](_images/WuggyLandFoliage.png)
 
+##Effects = Shaders+Passes+Renderstates
+To enable advanced visual effects it is often necessary to combine the output of several 
+rendering passes - that is rendering the same geometry more than once with different shaders.
+Additionally it is often necessary to switch other settings of the rendering pipeline between
+different passes. 
 
+Such combinations of applying several render passes with different shaders and different settings
+are very often caled "Effects" (FX). FUSEE has a support class called `ShaderEffect` that 
+allows to define effects in a convenient way. 
+
+The final stage of this tutorial uses a shader effect instead of a simple shader. 
+
+ - Visit the [result as web application]
+  (https://cdn.rawgit.com/griestopf/Fusee.Tutorial/xxxx/Tutorial06Completed/out/Fusee.Tutorial.Web.html) 
+  (Ctrl-Click or Long-Press to open in new tab).
+ 
+ - See [Tutorial.cs] (../Tutorial06Completed/Core/Tutorial.cs) in the [Tutorial06 Completed] (../Tutorial06Completed) folder for 
+   the overall state so far.
+
+##Exercise 
+ - Prepare your Renderer to handle geometry with more than one texture.
+    - Implement a texture-lookup (using a `Dictionary<string, ITexture>` object).
+ - Prepare your Renderer to handle more than one `ShaderEffect` - e.g. based on object names.
+    - In the material visitor lookup the `CurrentNode.Name` and read the respective
+      effect from a `Dictionary<string, ShaderEffect>` object wich can be filled in `Init()`.
+ - Implement a two-pass renderer drawing a black outline.
+    - The first pass vertex shader moves transforms each vertex by MVP into clip space and 
+      additionally moves it along the x- and y-coordinate of the normal (in clip-space).
+    - The first pass pixel shader just assigns black to every pixel
+    - The first pass' `StateSet` should set `CullMode = Cull.Clockwise` and `ZEnable = false`
+    - The second pass' should use the current vertex and pixel shader.
+    - The second pass' `StateSet` should set `CullMode = Cull.Counterclockwise` and `ZEnable = true`
+    Here's an example for such a set:
+    ###Vertex Shader
+    ```C#
+    attribute vec3 fuVertex;
+    attribute vec3 fuNormal;
+
+    varying vec3 normal;
+
+    uniform mat4 FUSEE_MVP;
+    uniform mat4 FUSEE_ITMV;
+
+    uniform vec2 linewidth;
+
+    void main()
+    {
+        normal = mat3(FUSEE_ITMV[0].xyz, FUSEE_ITMV[1].xyz, FUSEE_ITMV[2].xyz) * fuNormal;
+        normal = normalize(normal);
+        gl_Position = (FUSEE_MVP * vec4(fuVertex, 1.0) ) + vec4(linewidth * normal.xy, 0, 0); // + vec4(0, 0, 0.06, 0);
+    }    
+    ```
+    ###Pixel Shader
+    ```C#
+    #ifdef GL_ES
+        precision highp float;
+    #endif
+
+    uniform vec4 linecolor;
+
+    void main()
+    {
+        gl_FragColor = linecolor;
+    }    
+    ```
+ - Note that this line-renderer only works with geometry meeting the following rules
+    - No overlapping inner parts of geometry is allowed
+    - All geometry must have continuous normals at edges. No hard edges allowed. To simulate
+      hard edges, prepare your geometry with bevelled edges with small radii.
+ - Create some sample geometry to meeting these requirements and render it during
+   your game. 
+ - Change the second pass to cel-rendering
+    - Completely remove the lighting calculation for diffuse and specular parts, instead:
+    - Draw, render or download an image of a cartoon-like lit white sphere like the one below. Note that
+      less color fades and more sharp color borders create a more cartoonish look - so you might
+      create better spheres than this!
+      
+      ![Lit Sphere](Core/Assets/litsphere.jpg)
+      
+    - In the pixel shader use this sphere image as a texture to retrieve the overall lighting intensity. 
+      Calculate the texture coordinates for this texture from the 
+      `varying vec3 normal` like this:
+      ``` vec2 uv = normal.xy * 0.5 + vec2(0.5, 0.5);```
+    - Combine the resulting intensity with the albedo from the material.
+
+    
    
     
      
