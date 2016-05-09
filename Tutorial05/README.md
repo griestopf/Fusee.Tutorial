@@ -64,7 +64,7 @@ To summarize, you can imagine the contents of a `.fus` file as the example tree 
 ![Example Tree] (_images/SceneHierarchy.png)
 
 The orange object is the one-and-only `SceneContainer` root instance. The yellow squares are `SceneNodeContainer` objects (*nodes*) 
-and the green circles are different derivations of `SceneComponentContainer` instances (*components*).
+and the green rounded squares are different derivations of `SceneComponentContainer` instances (*components*).
 
 The numbers are the order in which a traversal will visit each node and component. 
 

@@ -97,30 +97,80 @@ FUSEE has some functionality we can use to do this. Perform the following steps:
    ImageData leaves = AssetStorage.Get<ImageData>("Leaves.jpg");
    _leavesTexture = RC.CreateTexture(leaves);
    TextureParam = RC.GetShaderParam(shader, "texture");
+   TexMixParam = RC.GetShaderParam(shader, "texmix");
    ```
-   don't forget to declare the `TextureParam` and the `_leavesTexture` identifiers at the class level of the `Renderer` class:
+   don't forget to declare the three fields used above at the class level of the `Renderer` class:
    ```C#
    private IShaderParam TextureParam;
+   private IShaderParam TexMixParam;
    private ITexture _leavesTexture;
    ```
- - To be able to access the texture in the pixel shader, add a `uniform` variable to `PixelShader.frag`:
+ - To be able to access the texture in the pixel shader, add two `uniform` variables to `PixelShader.frag`:
    ```C#
    uniform sampler2D texture;
    uniform float texmix;
    ```
    Note the datatype `sampler2D` (with capital ***D***) in comparison to the datatypes we already used for `uniform` parameters!
-   We need to make use of the 
    
- - Again in the constructor of `Renderer`, find this new `uniform` variable called `texure` in the shader and 
-   request an identifier for it - as we do with all the other `uniform`s as well:
+ - Now we want to read a color value out of the `texture`. This can be done using the `texture2D()`
+   function declared in GLSL. The first parameter of `texture2D()` is the texture to read from. The
+   second parameter ist a 2D coordinate where both dimensions may contain values from 0 to 1. We will
+   simply pass (0, 0) denoting the lower left pixel of the texture image. In addition, we will use the `texmix`
+   variable as a means to mix the color value passed in `albedo` with the color read from the texture.
+   All in all, the resulting pixel shader should look like this:
    ```C#
-   ...
+    #ifdef GL_ES
+        precision highp float;
+    #endif
+    varying vec3 viewpos;
+    varying vec3 normal;
+    uniform vec3 albedo;
+    uniform float shininess;
+    uniform float specfactor;
+    uniform vec3 speccolor;
+    uniform vec3 ambientcolor;
+    uniform sampler2D texture;
+    uniform float texmix;
+
+    void main()
+    {
+        vec3 nnormal = normalize(normal);
+        
+        // Diffuse
+        vec3 lightdir = vec3(0, 0, -1);
+        float intensityDiff = dot(nnormal, lightdir);
+        vec3 resultingAlbedo = (1.0-texmix) * albedo + texmix * vec3(texture2D(texture, vec2(0, 0)));
+
+        // Specular
+        float intensitySpec = 0.0;
+        if (intensityDiff > 0.0)
+        {
+            vec3 viewdir = -viewpos;
+            vec3 h = normalize(viewdir+lightdir);
+            intensitySpec = specfactor * pow(max(0.0, dot(h, nnormal)), shininess);
+        }
+
+        gl_FragColor = vec4(ambientcolor + intensityDiff * resultingAlbedo + intensitySpec * speccolor, 1);
+    }
    ```
+   Note how the `resultingAlbedo` is now calculated as a mixture between the original `albedo` and the color
+   at (0, 0) in `texture`.
 
  - Finally, in `OnMaterial`, check if there is a texture given (assuming that it's "Leaves.jpg") and set
-   our `uniform` parameter `texture` to be the leaves image.
-   
-   
+   our `uniform` parameter `texture` to be the leaves image, as well as `texmix` to 0 or 1, depending 
+   on the presence of a texure in the material.
+   ```C#
+    if (material.Diffuse.Texture == "Leaves.jpg")
+    {
+        RC.SetShaderParamTexture(TextureParam, _leafTexture);
+        RC.SetShaderParam(TexMixParam, 1.0f);
+    }
+    else
+    {
+        RC.SetShaderParam(TexMixParam, 0.0f);
+    }
+   ```
+
 
 ###Texture Coordinates
 

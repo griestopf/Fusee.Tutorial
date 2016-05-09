@@ -9,6 +9,7 @@ uniform float specfactor;
 uniform vec3 speccolor;
 uniform vec3 ambientcolor;
 uniform sampler2D texture;
+uniform float texmix;
 
 void main()
 {
@@ -17,6 +18,7 @@ void main()
 	// Diffuse
 	vec3 lightdir = vec3(0, 0, -1);
     float intensityDiff = dot(nnormal, lightdir);
+	vec3 resultingAlbedo = (1.0-texmix) * albedo + texmix * vec3(texture2D(texture, vec2(0, 0)));
 
 	// Specular
     float intensitySpec = 0.0;
@@ -27,5 +29,5 @@ void main()
 		intensitySpec = specfactor * pow(max(0.0, dot(h, nnormal)), shininess);
 	}
 
-    gl_FragColor = vec4(ambientcolor + intensityDiff * albedo + intensitySpec * speccolor, 1);
+    gl_FragColor = vec4(ambientcolor + intensityDiff * resultingAlbedo + intensitySpec * speccolor, 1);
 }

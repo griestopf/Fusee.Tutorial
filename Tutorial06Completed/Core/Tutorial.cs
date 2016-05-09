@@ -17,12 +17,13 @@ namespace Fusee.Tutorial.Core
     class Renderer : SceneVisitor
     {
         public RenderContext RC;
-        public IShaderParam AlbedoParam;
-        public IShaderParam ShininessParam;
-        public IShaderParam SpecFactorParam;
-        public IShaderParam SpecColorParam;
-        public IShaderParam AmbientColorParam;
-        public IShaderParam TextureParam;
+        private IShaderParam AlbedoParam;
+        private IShaderParam ShininessParam;
+        private IShaderParam SpecFactorParam;
+        private IShaderParam SpecColorParam;
+        private IShaderParam AmbientColorParam;
+        private IShaderParam TextureParam;
+        private IShaderParam TexMixParam;
         private ITexture _leafTexture;
         public float4x4 View;
         private Dictionary<MeshComponent, Mesh> _meshes = new Dictionary<MeshComponent, Mesh>();
@@ -58,6 +59,7 @@ namespace Fusee.Tutorial.Core
             SpecColorParam = RC.GetShaderParam(shader, "speccolor");
             AmbientColorParam = RC.GetShaderParam(shader, "ambientcolor");
             TextureParam = RC.GetShaderParam(shader, "texture");
+            TexMixParam = RC.GetShaderParam(shader, "texmix");
 
             // Read the Leaves.jpg image and upload it to the GPU
             ImageData leaves = AssetStorage.Get<ImageData>("Leaves.jpg");
@@ -93,6 +95,11 @@ namespace Fusee.Tutorial.Core
                 if (material.Diffuse.Texture == "Leaves.jpg")
                 {
                     RC.SetShaderParamTexture(TextureParam, _leafTexture);
+                    RC.SetShaderParam(TexMixParam, 1.0f);
+                }
+                else
+                {
+                    RC.SetShaderParam(TexMixParam, 0.0f);
                 }
             }
             else
