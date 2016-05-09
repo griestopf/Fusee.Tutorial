@@ -293,40 +293,42 @@ The final stage of this tutorial uses a shader effect instead of a simple shader
     - The first pass' `StateSet` should set `CullMode = Cull.Clockwise` and `ZEnable = false`
     - The second pass' should use the current vertex and pixel shader.
     - The second pass' `StateSet` should set `CullMode = Cull.Counterclockwise` and `ZEnable = true`
-    Here's an example for such a set:
-    ###Vertex Shader
-    ```C#
-    attribute vec3 fuVertex;
-    attribute vec3 fuNormal;
+      Here's an example for such a set:
+    
+      ###Vertex Shader
+      ```C#
+        attribute vec3 fuVertex;
+        attribute vec3 fuNormal;
 
-    varying vec3 normal;
+        varying vec3 normal;
 
-    uniform mat4 FUSEE_MVP;
-    uniform mat4 FUSEE_ITMV;
+        uniform mat4 FUSEE_MVP;
+        uniform mat4 FUSEE_ITMV;
 
-    uniform vec2 linewidth;
+        uniform vec2 linewidth;
 
-    void main()
-    {
-        normal = mat3(FUSEE_ITMV[0].xyz, FUSEE_ITMV[1].xyz, FUSEE_ITMV[2].xyz) * fuNormal;
-        normal = normalize(normal);
-        gl_Position = (FUSEE_MVP * vec4(fuVertex, 1.0) ) + vec4(linewidth * normal.xy, 0, 0); // + vec4(0, 0, 0.06, 0);
-    }    
-    ```
-    ###Pixel Shader
-    ```C#
-    #ifdef GL_ES
-        precision highp float;
-    #endif
+        void main()
+        {
+            normal = mat3(FUSEE_ITMV[0].xyz, FUSEE_ITMV[1].xyz, FUSEE_ITMV[2].xyz) * fuNormal;
+            normal = normalize(normal);
+            gl_Position = (FUSEE_MVP * vec4(fuVertex, 1.0) ) + vec4(linewidth * normal.xy, 0, 0); // + vec4(0, 0, 0.06, 0);
+        }    
+      ```
+    
+       ###Pixel Shader
+       ```C#
+        #ifdef GL_ES
+            precision highp float;
+        #endif
 
-    uniform vec4 linecolor;
+        uniform vec4 linecolor;
 
-    void main()
-    {
-        gl_FragColor = linecolor;
-    }    
-    ```
- - Note that this line-renderer only works with geometry meeting the following rules
+        void main()
+        {
+            gl_FragColor = linecolor;
+        }    
+       ```
+ - Note that this outline-renderer only works with geometry meeting the following rules
     - No overlapping inner parts of geometry is allowed
     - All geometry must have continuous normals at edges. No hard edges allowed. To simulate
       hard edges, prepare your geometry with bevelled edges with small radii.
