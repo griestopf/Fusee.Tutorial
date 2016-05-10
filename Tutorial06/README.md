@@ -211,7 +211,7 @@ relative position of the pixel to the triangle's vertices. This interpolation ha
 in the same way we are interpolating normals: As part of the interpolation funcionality 
 that handles every varying parameter passed from the vertex shader to the pixel shader.
 
-This way, any position on the surface has a texture coordinate attached to. Just imagne how
+This way, any position on the surface has a texture coordinate attached to. Just imagine how
 every 3D-triangle of your geometry is mapped to a 2D-triangle in UV space.
 
 ![A triangle mapped to 2D UV space](_images/TriangleInUv.png)
