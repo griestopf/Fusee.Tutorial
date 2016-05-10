@@ -330,11 +330,11 @@ The final stage of this tutorial uses a shader effect instead of a simple shader
             gl_FragColor = linecolor;
         }    
        ```
- - Note that this outline-renderer only works with geometry meeting the following rules
+ - Note that this outline-renderer only works with geometry with the following properties
     - No overlapping inner parts of geometry is allowed
     - All geometry must have continuous normals at edges. No hard edges allowed. To simulate
       hard edges, prepare your geometry with bevelled edges with small radii.
- - Create some sample geometry to meeting these requirements and render it during
+ - Create some sample geometry matching these requirements and render it during
    your game. 
  - Change the second pass to cel-rendering
     - Completely remove the lighting calculation for diffuse and specular parts, instead:
