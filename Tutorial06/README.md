@@ -19,14 +19,16 @@ object names.
 But let's look at the things that additionally changed under the hood.
  - The [Pixel Shader](Core/Assets/PixelShader.frag) now contains a more sophisticate
    specular color handling and an additional handling for setting an ambient color.  
- ```C# 
- uniform float specfactor;
- uniform vec3 speccolor;
- uniform vec3 ambientcolor;
- // ...
- intensitySpec = specfactor * pow(max(0.0, dot(h, nnormal)), shininess);
- gl_FragColor = vec4(ambientcolor + intensityDiff * albedo + intensitySpec * speccolor, 1);
- ```
+
+   ```C# 
+    uniform float specfactor;
+    uniform vec3 speccolor;
+    uniform vec3 ambientcolor;
+    // ...
+    intensitySpec = specfactor * pow(max(0.0, dot(h, nnormal)), shininess);
+    gl_FragColor = vec4(ambientcolor + intensityDiff * albedo + intensitySpec * speccolor, 1);
+   ```
+ 
  - These new parameters are set from respective entries in the various material
    components present in the WuggyLand.fus file. This happens in the now [extended
    `OnMaterial()` method found in Tutorial.cs](Core/Tutorial.cs#L78-L108).
@@ -268,7 +270,7 @@ Additionally it is often necessary to switch other settings of the rendering pip
 different passes. 
 
 Such combinations of applying several render passes with different shaders and different settings
-are very often caled "Effects" (FX). FUSEE has a support class called `ShaderEffect` that 
+are very often called "Effects" (FX). FUSEE has a support class called `ShaderEffect` that 
 allows to define effects in a convenient way. 
 
 The final stage of this tutorial uses a shader effect instead of a simple shader. 
