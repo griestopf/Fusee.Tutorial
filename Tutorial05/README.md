@@ -23,19 +23,20 @@ This Visual Studio Extension produces visual support like shown below while edit
 ![Syntax Hilighting in shader code](_images/ShaderSyntaxHilight.png)
 
 
-##FUSEE's built-in SceneGraph
+## FUSEE's built-in SceneGraph
 In Tutorial 04 we created a simple class, `SceneOb` that we used to create hierarchical scene graphs. In addition we added a method `RenderSceneOb()` 
 that went through a tree of `SceneOb` instances and rendered the contents of the individual `SceneOb`s. From now on we will call the process of 
 going through a hierarchy of objects ***traversing*** the tree. In addition we will call a hierarchy of objects making up parts of a 3D scene
 a **Scene Graph**.
 
-FUSEE already comes with a set of classes allowing to build up Scene Graphs. You can find these classes in the [Fusee.Serialization project]
-(https://github.com/FUSEEProjectTeam/Fusee/tree/develop/src/Serialization). All classes found here can be serialized and deserialized using 
+FUSEE already comes with a set of classes allowing to build up Scene Graphs. You can find these classes in the 
+[Fusee.Serialization project](https://github.com/FUSEEProjectTeam/Fusee/tree/develop/src/Serialization).
+All classes found here can be serialized and deserialized using 
 automatically generated serialization code. In Tutorial 04 you already used these classes to load a `.fus` file and retrieve some 
 Mesh data out of it. But `.fus` can not only store simple meshes - it can contain complete scene graphs.
 
 A Scene Graph in FUSEE is always a tree of `SceneNodeContainer` objects (we will just call them *nodes*). 
-Take a look at the [source code] (https://github.com/FUSEEProjectTeam/Fusee/blob/develop/src/Serialization/SceneNodeContainer.cs)
+Take a look at the [source code](https://github.com/FUSEEProjectTeam/Fusee/blob/develop/src/Serialization/SceneNodeContainer.cs)
 and you will notice that its declaration is very short: Besides a name, each node is only made up of two lists
 
  1. A list of `SceneComponentContainer` objects - we will just call them *components*
@@ -90,14 +91,14 @@ its contents:
 
 ![Wuggy in the debugger's Watch window](_images/WuggyDebugWatch.png)
 
-###Practice
+### Practice
  - Draw an image of the hierarchy contained in `wuggy` using squares and circles like the image above.
  - Convince yourself about the 1:1 connection of the hierarchy in the `wuggy` variable and the scene 
    graph image from the modelling software above.
  - Look inside the various Components. What information is contained in the `MaterialComponent`, `TransformComponent` and `MeshComponent` types?
  
  
-##Rendering with a Visitor 
+## Rendering with a Visitor 
 To render a scene like the one stored in `wuggy` we need to *recursively* traverse all `Children` of the root `SceneContainer`. We already 
 implemented a simple rendering traversal with our `RenderSceneOb()` method. But rendering is not the only purpose to traverse a scene. 
 Here are two traversal reasons other than rendering:
@@ -113,8 +114,8 @@ also have a couple of different actions that should take place when traversing. 
 In computer science this problem and its solution is treated under the keyword ***Visitor Pattern***, or ***Double Dispatch***. FUSEE
 comes with an implementation based on the classical Visitor Pattern and some extensions built around it to enable programmers
 using scenes to easily implement their own traversals and at the same time extend the set of `SceneNodeContainer` classes for 
-their own needs. These implementions around the core `SceneVisitor` class can be found in the [Fusee.Xene] (https://github.com/FUSEEProjectTeam/Fusee/tree/develop/src/Xene) subproject. You can also find some additional information in 
-the [Fusee.Xene.md] (https://github.com/FUSEEProjectTeam/Fusee/blob/develop/src/Xene/Fusee.Xene.md) document.
+their own needs. These implementions around the core `SceneVisitor` class can be found in the [Fusee.Xene](https://github.com/FUSEEProjectTeam/Fusee/tree/develop/src/Xene) subproject. You can also find some additional information in 
+the [Fusee.Xene.md](https://github.com/FUSEEProjectTeam/Fusee/blob/develop/src/Xene/Fusee.Xene.md) document.
 
 To Implement your own Rendering Visitor you should do the following.
  
@@ -166,7 +167,7 @@ To Implement your own Rendering Visitor you should do the following.
 	
 Of course our renderer doesn't do anything right now. But you can already observe him visiting the components:
 
-###Practice
+### Practice
  - Build the project. Set three breakpoints - one at the closing curly brace (`}`) of each of the visitor methods `On...()` 
    defined in our `Renderer` class. Start the program and observe the mesh, material and transform components as they
    are visited. 
@@ -199,7 +200,7 @@ the `Renderer` class, add the following methods:
 ```
  
 So altogether we should now have five empty methods in `Renderer`.
-###Practice
+### Practice
  - Set two more breakbpoints at the closing curly braces and observe the visitor doing its work including going down and up 
    the hierarchy while looking at `CurrentNode` to see where the traversal is currently at.
  - **Advanced**. Add functionality to output a structured text with the contents of `_wuggy` with indentations showing
@@ -307,7 +308,7 @@ Building and running this should result in the wuggy model shown.
 
 ![Wuggy in FUSEE](_images/WuggyInFusee.png)
 
-###Practice
+### Practice
 Understand how the renderer operates. 
  - Again, set breakpoints in all methods and step through the traversal. See how transform, mesh and material components are processed.
  - Understand what the `RC.ModelView = View * _model.Tos;` line does. Why can we find this line in `PopState()` and in `OnTransform()`?
@@ -315,7 +316,7 @@ Understand how the renderer operates.
  - Look up the definition of `TransformComponent.Matrix()` inside FUSEE's sources to see that this is pretty close to what 
    our old `ModelXForm()` did.
  
-##Accessing Scene Properties
+## Accessing Scene Properties
 Now we have a model that has a lot of parts that should be moved. Wheels should spin. The back wheels can be used to perform steering operations.
 The camera eyes can be rotated along two (or three) axes and the camera mount can be extended. All this can be done now by changing 
 values on transform components in the scene graph from outside. 
@@ -355,7 +356,7 @@ Finally in `RenderAFrame` we can access this transform node before rendering and
 
 Build and run the application and have fun pressing `W` and `S` to spin the front left wheel.
 
-##More Realism by Specular Light
+## More Realism by Specular Light
 Now we want to blow up our shader to additionally handle a specular component of the light source which will add a bit more realism to the
 resulting images. The specular component creates highlights on the surfaces by simulating mirrors of the light source(s). To get an idea how
 the specular component is calculated, look at the following image:
@@ -475,10 +476,10 @@ Compiling and building all changes should result in the wuggy model shown with s
   (https://cdn.rawgit.com/griestopf/Fusee.Tutorial/2058f42/Tutorial05Completed/out/Fusee.Tutorial.Web.html) 
   (Ctrl-Click or Long-Press to open in new tab).
  
- - See [Tutorial.cs] (../Tutorial05Completed/Core/Tutorial.cs) in the [Tutorial05 Completed] (../Tutorial05Completed) folder for 
+ - See [Tutorial.cs](../Tutorial05Completed/Core/Tutorial.cs) in the [Tutorial05 Completed](../Tutorial05Completed) folder for 
    the overall state so far.
 
-##Exercise
+## Exercise
 
  - Toy around with the specular and diffuse components in the pixel shader. 
    - See what happens if we don't normalize the interpolated normal vector. 

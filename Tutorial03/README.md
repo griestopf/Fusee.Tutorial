@@ -1,13 +1,13 @@
-#Tutorial 03
+# Tutorial 03
 
-##Goals
+## Goals
  - Get a better understanding of the shaders' tasks.
  - Understand why we need 4x4 matrices (and not 3x3) to perform transformations.
  - Grasp the indexing scheme in `Mesh` and how edges in geometry require that vertices
    are passed through the vertex shader more than once.
  - Get a first glance how object hierarchies are built using composite transformations
  
-##Get that 3D Look
+## Get that 3D Look
 In the tutorials so far the generated output looked rather flat. Even the 3D-tetrahedron in [Tutorial 02] (../Tutorial02) really looked rather
 like a flat triangle. This has two reasons:
 
@@ -17,12 +17,12 @@ like a flat triangle. This has two reasons:
 
 While we will address reason 1 in one of the upcoming tutorials (and NOT in this one), we want to take a closer look at coordinate transformations.
 
-##Shaders revisited
+## Shaders revisited
 But before that let's revisit what we already know about the rendering pipeline and shaders. As we already know, a vertex shader is called for each
 vertex passed through the rendering pipeline. One of the main goals a vertex shader has to accomplish is to transform coordinates from the
 coordinate system they are in when they enter the rendering pipeline to a coordinate system that resembles the display's (two) main axes. 
 
-![Vertex Shader: Transform model into screen coords] (_images/VertexShader.png)
+![Vertex Shader: Transform model into screen coords](_images/VertexShader.png)
 
 Without being too exact you could say: The vertex shader transforms each vertex from model coordinates to screen coordinates. It's not quite
 exact because, als you already observed, the vertex shader's output coordinate system ranges from -1 to 1 in both screen dimensions, x and y. 
@@ -34,12 +34,12 @@ needed in the lighting calculation, (bone) animation, just to name a few.
 As soon as these "screen" coordinates are known for all three vertices of a triangle, the render pipeline can figure out which pixels need to 
 be filled with color. Then for each of these pixels the pixel shader (provided by you, the programmer) is called. This process is called rasterization.
 
-![Pixel Shader: Calculate a color for each pixel] (_images/PixelShader.png)
+![Pixel Shader: Calculate a color for each pixel](_images/PixelShader.png)
 
 Once the rendering pipeline knows which of the screen`s pixels are covered by geometry (the dark pixels on the left side of the image above),
 it can call the pixel shader to do its task and fill any of the pixels covered by geometry with an individually calculated color.
 
-##Normals
+## Normals
 Open `Tutorial03.sln` in Visual Studio and look into the file [Core/Tutorial.cs] (Core/Tutorial.cs). The mesh has become a lot more
 complex now. We want to display a cube. With what we already know, we should think a cube is made out of eight vertices and each of the six 
 faces made out of two triangles, so twelve triangles hooked on eight vertices. But now we want to display different faces with different 
@@ -51,7 +51,8 @@ The following image shows the indices of the 24 vertices in the `_mesh` indicate
 
 ![A Cube: Each vertex exists three times with three different normals] (_images/VertsAndNormals.png)
 
-Besides the changed ```_mesh``` geometry there are three more slight changes applied to the code compared to the [completed Tutorial02 source code] (../Tutorial02Completed/Core/Tutorial.cs):
+Besides the changed ```_mesh``` geometry there are three more slight changes applied to the code compared to the 
+[completed Tutorial02 source code](../Tutorial02Completed/Core/Tutorial.cs):
 
  1. The mouse input is only applied to the rotation angle if the left mouse button is presssed. 
  
@@ -62,15 +63,15 @@ Besides the changed ```_mesh``` geometry there are three more slight changes app
 	
 Build and run Tutorial 03 on your favorite platform and look at the result.
 
-![The tutorial 03 in it's original state] (_images/Cube01.png)
+![The tutorial 03 in it's original state](_images/Cube01.png)
 
-###Practice
+### Practice
  - Take a look at `_mesh.Vertices` and `_mesh.Normal` and understand that one index in `_mesh.Triangles` identifies a pair of one vertex 
    and one normal. 
  - Try to match the contents of `_mesh.Vertices` and `_mesh.Normal` with the image above: For a given index find  the vertex and and normal
    in the image above and check that the image is correct from the vertex' and the normal's coordinates.
   
-##Normal Shading
+## Normal Shading
 Now we need to pass through the normal information provided with the vertices. If a mesh contains normals, FUSEE already passes the 
 normals on to the vertex shader through the reserved attribute ```fuNormal```. This is just the same way as a mesh's vertices are 
 passed to the vertex shader through ```fuVertex```. Since this tutorial is not yet about lighting calculation, we just want the normal
@@ -116,14 +117,14 @@ shaders, if you wish.
 
 Build and run the changes to see how our cube geometry now has a unique single color applied to every face now.
 
-![The shaders now display the normal information] (_images/Cube02.png)
+![The shaders now display the normal information](_images/Cube02.png)
 
-###Practice
+### Practice
  - Rotate the cube and explain for each of the four visible faces of the cube which normal value is responsible for the color
    given to that face (in other words: Which are the colors for back, left, right and front).
 
    
-##Transformations = Matrices
+## Transformations = Matrices
 What the vertex shader needs to do is: Perform transformations on incoming coordinates. Typically, the tranformation performed on each 
 vertex is a composition of a long list of individual simple transformations. Consider a car racing game where for a single frame the model 
 of a wheel of the car should be rendered. Each vertex of the wheel model is passed into the pipeline in  the wheel's model 
@@ -176,7 +177,7 @@ We don't need to go into maths much deeper now. But you should know now why we o
 although all we want to do is transform some 3D vertices.
    
    
-##Matrix as Uniform Parameter
+## Matrix as Uniform Parameter
 As we know now, we can compose complex transformations from simple "atomic" tranformations like translation, rotation and scale. Instead
 of doing matrix calculations in the vertex shader (where we need the transformation), we compose one single matrix outside the vertex
 shader and then apply that matrix to all incoming vertices belonging to one mesh.
@@ -231,7 +232,7 @@ Instead of handling ```alpha``` as a shader variable from the 'outside' C# code,
 
 Build and run these changes and make sure that the output is the same as before.   
    
-###Practice
+### Practice
  - Understand the changes applied above - Note how we now have one single matrix (```xform```) which we can use to
    apply any tranformation to (given that the transformation can be expressed as a matrix).
  - Try to compose ```_xform``` out of more transformations, probably also controlled by input axes. See which other
@@ -241,7 +242,7 @@ Build and run these changes and make sure that the output is the same as before.
  - Explain why it's better to compose ```_xform``` in the C# ```RenderAFrame()``` method than composing it in the 
    vertex shader.
 
-##Perspective and Aspect Ratio
+## Perspective and Aspect Ratio
 Now we're ready for 3D :-). The coordinates our vertex shader writes out to ```gl_Position``` as the resulting
 screen coordinates are in 4D: ```(x, y, z, w)```. The rendering pipeline takes these coordinates as they drop out of our
 vertex shader and further processes them as follows:
@@ -285,14 +286,14 @@ Building and running this now shows a cube perspectively displayed from the side
 
 ![The cube in three dimensions] (_images/Cube03.png)
 
-###Practice
+### Practice
  - Note that we needed to insert a translation about 3 units along the z-axis. Understand that this is necessary to move the geometry
    into the visible range between the near and the far clipping plane. What happens if we omit this translation?
  - If you didn't until now: Apply a second rotation around the x-axis controlled by the mouse- or touch-velocity along the screen's 
    y-axis to see the top and bottom faces of the cube.
  - What happens if you change the order of the translation and the rotation(s) in ```_xform```?
  
-##More Cubes
+## More Cubes
 Now let's add another cube. We can display two cubes just by rendering our single cube 
 twice and change the transformation matrix between the two rendering operations to make the cubes appear at different places. Here's
 the complete ```RenderAFrame``` implementation doing that:
@@ -371,7 +372,7 @@ them in variables.
 	RC.Render(_mesh);
 ```
 
-##Parent-Child relations
+## Parent-Child relations
 Now we want to make one cube a child of another. That means we need to apply all the transformations we put on one cube to the
 second cube as well before we apply the second cube's transformations. We want to control each cube's local yaw (rotation around y axis)
 and pitch (rotation around x axis) using the keyboard, so we need to store these angles as fields on the class level:
@@ -456,7 +457,7 @@ both bars using the arrow keys.
  - See [Tutorial.cs] (../Tutorial03Completed/Core/Tutorial.cs) in the [Tutorial03 Completed] (../Tutorial03Completed) folder for 
    the overall state so far.
    
-##Exercise
+## Exercise
  - Create a little robot made out of a base, an upper arm and a forearm. Use two cubes to build the base, and one cube each for 
    upper arm and forearm.
    

@@ -1,16 +1,16 @@
-#Tutorial 02
+# Tutorial 02
 
-##Goals
+## Goals
  - Understand how geometry is pumped through the rendering pipeline.
  - Understand `uniform`, `attribute` and `varying` shader variables.
  - Understand how data is passed from pixel to vertex shader.
  - Grasp basics of 3D transformations.
 
-##Prerequisistes
- - Make sure you got [Tutorial01] (../Tutorial01) up and running.
+## Prerequisistes
+ - Make sure you got [Tutorial01](../Tutorial01) up and running.
  
-##Passing more information through the pipeline
-First, let's add some more triangles to the geometry. Add one more vertex and span four triangles with the four vertices to creatae a Tetrahedron ("a triangular pyramid"). Extend the Mesh instantiation in [Core/Tutorial.cs] (Core/Tutorial.cs) to the following (you may omit the comments):
+## Passing more information through the pipeline
+First, let's add some more triangles to the geometry. Add one more vertex and span four triangles with the four vertices to creatae a Tetrahedron ("a triangular pyramid"). Extend the Mesh instantiation in [Core/Tutorial.cs](Core/Tutorial.cs) to the following (you may omit the comments):
 ```C#
 	_mesh = new Mesh
 	{
@@ -31,13 +31,13 @@ First, let's add some more triangles to the geometry. Add one more vertex and sp
 	};
 ```
 Building and running the solution this way will still result in a single triangle being displayed. 
-![Tetrahedron back side] (_images/TetrahedronBackSide.png)
+![Tetrahedron back side](_images/TetrahedronBackSide.png)
 
 This is Triangle 1, the "back side" of the tetrahedron. The other 
 three triangles are obscured by the one we are seeing. Note that the visible triangle is now somewhat out of center towards the upper 
 border of the window. This is because the vertex coordinates used above are chosen to make their common origin (0, 0, 0) to be the tetrahedron's center of gravity. 
 
-##Rotating it
+## Rotating it
 Now we would like to rotate the tetrahedron. There are two ways to accomplish this:
  1. We could change the Mesh's vertex coordinates every frame within `RenderAFrame`.
  2. We could transform the Mesh's vertex coordinates every frame from within the vertex shader.
@@ -67,9 +67,9 @@ our vertex shader:
 
 ```
 Building and running should result in the triangle rotated about 45 degrees in counterclockwise order.
-![Tetrahedron 45 degrees] (_images/Tetrahedron45Deg.png)
+![Tetrahedron 45 degrees](_images/Tetrahedron45Deg.png)
 
-###Practice
+### Practice
  - Try other amounts for alpha to see how the rotation behaves.
  - Go 3D! Rotate around the y-axis instead of the z-axis (that is, leave fuVertex.y unchanged and apply the sin/cos factors to x and z. This way you will 
    get to see the other sides of the tetrahedron. Unfortunately you cannot tell the border between the different sides because they are all white,
@@ -128,10 +128,10 @@ Building and running this will show a somewhat rotating triangle. If you rotate 
 rather recognize a triangle bouncing back and forth. Remember that you are really seeing the triangular silhouette of a rotating 
 threedimensional tetrahedron. 
 
-###Practice
+### Practice
  - Create a uniform variable in the pixel shader and do some color animation.
 
-##Color
+## Color
 To get a more threedimensional graps of our geometry we want to add some more color to it. In later tutorials we will look at ways how to implement
 lighting calculations producing more realism. For now, we just want our pixel shader to perform a simple calculation where the position is
 interpreted as a color. To accomplish this, we need to pass the position information we receive in the vertex shader on to the pixel shader.
@@ -172,7 +172,7 @@ from 0 to 1 (this is done in the pixel shader `modelpos*0.5 + 0.5`).
 Build and run these changes will show the tetrahedron's vertices each with a different color. But not only that: every place on the triangle has
 a different color - the triangles' colors fade between the colors at their vertices. 
 
-![Tetrahedron color] (_images/TetrahedronColor.png)
+![Tetrahedron color](_images/TetrahedronColor.png)
 
 Why is that? - in our geometry we have defined only four vertices with four different positions. If we interpret positions as colors, shouldn't
 we see only four different colors?
@@ -192,12 +192,12 @@ as r, g, b triple. Pixels farther from the top get less green, because they are 
 
 The exact interpolation scheme applied here is based on so called "barycentric coordinates".
 
-###Practice
+### Practice
  - Try more advanced mappings from x, y, z coordinates to r, g, b colors.
  - Understand that in the pixel shader `modelpos` now keeps the current model-coordinate of the pixel the shader is called for.
    Imagine ways how you could make use of this information.
 
-##Interaction
+## Interaction
 Now that we know how to manipulate values in both, pixel and vertex shader, let's try to get interactive and see how we can read input values.
 FUSEE allows easy akquisition of values from the standard input devices like mouse, keyboard and touch. The easiest way to access the 
 `Fusee.Engine.Core.Input` class' static properties, `Mouse`, `Keyboard` and `Touch` is to add the following line to the top of the `Tutorial.cs` source code file:
@@ -230,14 +230,14 @@ big, especially with high resolution displays.
 Building and running this will give you interactive control over the rotation angle.
 
  - Visit the
-   [result as web application] (https://cdn.rawgit.com/griestopf/Fusee.Tutorial/5658a54/Tutorial02Completed/out/Fusee.Tutorial.Web.html)
+   [result as web application](https://cdn.rawgit.com/griestopf/Fusee.Tutorial/5658a54/Tutorial02Completed/out/Fusee.Tutorial.Web.html)
    (Ctrl-Click or Long-Press to open in new tab).
  
- - See [Tutorial.cs] (../Tutorial02Completed/Core/Tutorial.cs) in the [Tutorial02 Completed] (../Tutorial02Completed) folder for 
+ - See [Tutorial.cs](../Tutorial02Completed/Core/Tutorial.cs) in the [Tutorial02 Completed](../Tutorial02Completed) folder for 
    the overall state so far.	
 
 
-##Exercise
+## Exercise
  - Create a more complex geometry (e.g. a little house)
  - Rotate around two axes and/or move along two axes controlled by input devices. You can use two-dimensional uniform variables. 
    The GLSL (shader language) data type for two-dimensional values is [vec2] (https://www.opengl.org/wiki/Data_Type_(GLSL))
@@ -247,5 +247,5 @@ Building and running this will give you interactive control over the rotation an
  - Extend your pixel shader to create a highlight on the geometry based on the mouse cursor position: The color should become lighter, the closer the 
    mouse cursor is to the pixel the pixel shader is called for. You will need to pass the mouse position (`uniform`ly) to the pixel shader and
    also need the (`varying`) pixel's position. To measure the distance between two 2D-Points (`vec2`) within a shader you can use the 
-   [distance function] (https://www.opengl.org/sdk/docs/man/html/distance.xhtml).   
+   [distance function](https://www.opengl.org/sdk/docs/man/html/distance.xhtml).   
 

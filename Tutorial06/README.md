@@ -1,11 +1,11 @@
-#Tutorial 06
+# Tutorial 06
 
-##Goals
+## Goals
  - See how textures can be made available in the pixel shader.
  - Understand texture coordinates as part of the geometry.
  - Understand the interplay between shaders, multiple render passes and render state. 
  
-##Welcome to WuggyLand
+## Welcome to WuggyLand
 Open the Tutorial 06 solution in Visual Studio and build and run it. A little interactive scene
 has been created around the Wuggy rover. Using the `W`, `A`, `S` and `D` keys, 
 you can now move the rover around the checkerboard-like ground plane.
@@ -33,7 +33,7 @@ But let's look at the things that additionally changed under the hood.
    components present in the WuggyLand.fus file. This happens in the now [extended
    `OnMaterial()` method found in Tutorial.cs](Core/Tutorial.cs#L78-L108).
    
-###Practice
+### Practice
  - Take a look at the new Pixel Shader and try to figure out what the new
    `uniform` parameters do. Compare the changes to the [Pixel Shader from the 
    previous tutorial](../Tutorial05Completed/Core/Assets/PixelShader.frag). Temporarily
@@ -48,7 +48,7 @@ But let's look at the things that additionally changed under the hood.
  - Also watch the contents of the `material` component currently visited. What other 
    information is contained here which is currently NOT handled?
 
-###A Hint on Debugging
+### A Hint on Debugging
 Since we are using FUSEE's built-in `Visitor` to traverse the scene graph, the debugger
 will end up at some awkward code place deep in FUSEE whenever a run-time error occurs
 during scene traversal in one of our `On...()` visitor methods.
@@ -59,7 +59,7 @@ report Exceptions on startup (e.g. in OpenTK). You can selectively ignore these 
 they appear in the Exception Details window. As a result, you should end-up at more specific
 places with a traceable stack back to your own `On...()` visitor method causing the exception.  
    
-##Adding texture information
+## Adding texture information
 In `WuggyLand.fus`, the green parts of the tree models are already prepared
 to show a very simple leaf-like structure by displaying an image spread 
 over the rounded shapes. If you performed the last point of the Practice block 
@@ -82,7 +82,7 @@ models. To do this, we have to accomplish two things:
     to render, which pixel from the texture `Leaves.jpg` (a.k.a "Texel") it should take 
     as the `albedo`.
     
-###Textures are `uniform` Shader Parameters
+### Textures are `uniform` Shader Parameters
 Everything that controlled the process how a vertex shader proceesses coordinates or how
 a pixel shader calculates the color for a given screen pixel was passed into the shader 
 as a `uniform` parameter. We have seen single `float` values, `float3` values (used as
@@ -187,14 +187,14 @@ FUSEE has some functionality we can use to do this. Perform the following steps:
 Building and running the solution should result in no changes as the corner we are taking the color
 information from is nearly the same as the overall diffuse color of the treetop objects' materials.
 
-###Practice
+### Practice
  - Create a spare copy `Leaves.jpg`, open the original in an image editing software and assign a color other than
    green to the lower left corner of the image. Save the image and rebuild the application to see the 
    tree tops appear entirly in that color.
  - Just to use other texture coordinates that the original: use the normalized normal's x and y 
    as texture coordinates and try to explan yourself what you see as a result.
 
-###Texture Coordinates
+### Texture Coordinates
 Instead of constantly reading the lower left pixel of our image we now we want to read out 
 the correct pixel from the image texture. Typically, the information how a texture is applied 
 to an object is stored with the object's vertices in so called ***Texture Coordinates***.
@@ -263,7 +263,7 @@ its unique foliage:
 
 ![WuggyLand with foliage](_images/WuggyLandFoliage.png)
 
-##Effects = Shaders+Passes+Renderstates
+## Effects = Shaders+Passes+Renderstates
 To enable advanced visual effects it is often necessary to combine the output of several 
 rendering passes - that is rendering the same geometry more than once with different shaders.
 Additionally it is often necessary to switch other settings of the rendering pipeline between
@@ -279,10 +279,10 @@ The final stage of this tutorial uses a shader effect instead of a simple shader
   (https://cdn.rawgit.com/griestopf/Fusee.Tutorial/b0120f7/Tutorial06Completed/out/Fusee.Tutorial.Web.html) 
   (Ctrl-Click or Long-Press to open in new tab).
  
- - See [Tutorial.cs] (../Tutorial06Completed/Core/Tutorial.cs) in the [Tutorial06 Completed] (../Tutorial06Completed) folder for 
+ - See [Tutorial.cs](../Tutorial06Completed/Core/Tutorial.cs) in the [Tutorial06 Completed](../Tutorial06Completed) folder for 
    the overall state so far.
 
-##Exercise 
+## Exercise 
  - Prepare your Renderer to handle geometry with more than one texture.
     - Implement a texture-lookup (using a `Dictionary<string, ITexture>` object).
  - Prepare your Renderer to handle more than one `ShaderEffect` - e.g. based on object names.
@@ -297,7 +297,7 @@ The final stage of this tutorial uses a shader effect instead of a simple shader
     - The second pass' `StateSet` should set `CullMode = Cull.Counterclockwise` and `ZEnable = true`
       Here's an example for such a set:
     
-      ###Vertex Shader
+      ### Vertex Shader
       ```C#
         attribute vec3 fuVertex;
         attribute vec3 fuNormal;
@@ -317,7 +317,7 @@ The final stage of this tutorial uses a shader effect instead of a simple shader
         }    
       ```
     
-       ###Pixel Shader
+       ### Pixel Shader
        ```C#
         #ifdef GL_ES
             precision highp float;

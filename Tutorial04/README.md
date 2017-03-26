@@ -1,26 +1,26 @@
-#Tutorial 04
+# Tutorial 04
 
-##Goals
+## Goals
  - Learn to load 3D models as assets.
  - Understand Fusee's built-in ModelView and Projection matrices.
  - See how hierachical geometry can be handled in object hierarchies.
  - Implement a very simple lighting calculation in the pixel shader.
  
-##Reading Meshes From Files
+## Reading Meshes From Files
 FUSEE comes with a set of classes designed to be written to and loaded from files (serialized). These classes are 
 containers for data types typically found in 3D scenes, such as polygonal geometry, material (color) 
 settings, textures, and hierarchies. In this tutorial we will only look at how to read mesh geometry from files
 in the FUSEE file format (*.fus).
 
 Open the Tutorial 04 project and build it on your preferred platform (Desktop, Android or Web). Running 
-the result will show more or less the state where we left off at [Tutorial 03] (../Tutorial03):
+the result will show more or less the state where we left off at [Tutorial 03](../Tutorial03):
 
-![Tutorial 04 in its initial state] (_images/Tutorial04Start.png)
+![Tutorial 04 in its initial state](_images/Tutorial04Start.png)
 
 The only visible change is that the background color changed from dark green to white. 
 
 But let's look under the hood and try to understand what happened here first. 
-Open [Tutorial.cs] (Core/Tutorial.cs) and look at the first lines of the ```Init()``` method:
+Open [Tutorial.cs](Core/Tutorial.cs) and look at the first lines of the ```Init()``` method:
 
 ```C#
 	public override void Init()
@@ -172,7 +172,8 @@ Here's the resulting code:
     RC.Render(_mesh);
 ```
  
-###Practice
+### Practice
+
  - Get a grasp of the contents of a .fus file: Set a breakpoint AFTER (!!!) the first, the second and the third instruction of
    ```Init()``` and watch the contents of ```sc```, ```mc``` and ```_mesh``` after they have been assigned values to. Open the 
    hierachical structure in the watch window and look at the contents.
@@ -182,10 +183,11 @@ Here's the resulting code:
    the rendering pipeline with your vertex and pixel shader assign one single color to the circular bottom (and probably top) faces
    while giving each pixel of the curved coating surface an individual color changing from pixel to pixel. 
  
-##A Very Basic Lighting Calculation
+## A Very Basic Lighting Calculation
+
 Make sure the file ```Cylinder.fus``` is loaded into the ```_mesh``` and the result looks like this:
 
-![Cylinder with flat and faded color surfaces] (_images/CylinderColors.png)
+![Cylinder with flat and faded color surfaces](_images/CylinderColors.png)
 
 Now let's answer the last question of the practice block above: As you remember from [Tutorial 03] (../Tutorial03#normals), there's one single
 normal present at each vertex of every triangle. The curved coating surface of the cylinder is made up of individual triangles as well. 
@@ -193,7 +195,7 @@ But instead of copying each vertex as many times as there are triangles hung up 
 present only once. In addition each vertex along a curved surface gets assigned a normal that's calculated as the mean of the triangle
 normals meeting at that vertex. Take a look at the following image:
 
-![Cylinder with vertices, faces and normals] (_images/CylinderPolysVertsNormals.png)
+![Cylinder with vertices, faces and normals](_images/CylinderPolysVertsNormals.png)
 
 Note that the purple top vertex normals have exactly the same direction as the top surface normal itself would have. This does not hold for 
 the orange/yellow/green vertex normals at the rims of the coating surface. These normals are each somewhat half way between the normals that 
@@ -235,7 +237,7 @@ the opposite light ray direction as the "direction towards the light source". In
 the *light direction*. Now you can see that the intensity (how light it is) at a given point depends on how close the normal vector at that point
 is to the light direction:
 
-![Simple Lighting Model] (_images/LightingSimple.png)
+![Simple Lighting Model](_images/LightingSimple.png)
 
 In view coordinates (the coordinate system where the virtual camera is the center and the z-axis is the viewing direction), 
 the light direction is specified by the vector `(0, 0, -1)`. So we could calculate the angle between a normal vector in view coordinates, 
@@ -302,9 +304,9 @@ Since we built scale components into our modelview matrix, we need to normalize 
 
 Building and running thesse changes show a lit cylinder:
 
-![A lit cylinder] (_images/CylinderDiffuse.png)
+![A lit cylinder](_images/CylinderDiffuse.png)
 
-###Practice
+### Practice
  - Want some maths? In the vertex shader use the `FUSEE_ITMV` matrix instead of the `FUSEE_MV` matrix. The result seems to be the same!
    Look at the table above what's behind `FUSEE_ITMV`, then read  
    [OpenGL Red Book, Appendix F] (http://www.glprogramming.com/red/appendixf.html) *Transforming Normals* until *Whew!* and then try to explain:
@@ -316,7 +318,7 @@ Building and running thesse changes show a lit cylinder:
  - More hands-on and less maths: How would you apply colors to objects other than the grey we're having now, but still
    maintaining that 3D shaded look we worked so hard on?
    
-##Self Contained Objects
+## Self Contained Objects
 We can now have different sets of 3D geometry each making a model (cubes, spheres, cylinders, ...), We can position, scale and rotate 
 them and we can (or we soon learn how to) to give them individual colors.
 
@@ -327,7 +329,7 @@ Imagine to create a scene built of a lot of individual models like those current
  - Render a certain mesh.
 If you have hierarchies of objects you would additionally have to track parent-child relationships by chaining the
 correct model matrices of parents and grandparents before rendering the children. Remember the 
-[robot exercise from Tutorial 03] (../Tutorial03#exercise).
+[robot exercise from Tutorial 03](../Tutorial03#exercise).
 
 Soon you would end up with a cluttered and unstructured block of code. To avoid that,
 many 3D-realtime environments use the concept of a ***Scene Graph*** or ***Scene Tree***.
@@ -490,10 +492,10 @@ the viewing frustum: We simply place the camera now 8 units away from the object
 
 The result should look like this:
 
-![Man made of primitives] (_images/TinMan.png)
+![Man made of primitives](_images/TinMan.png)
 
 
-###Practice
+### Practice
  - Add more objects to make a more sophisticated tin man.
  - Set the arms' and legs' pivot points correctly and add some input axes to 
    control their rotation angles.
@@ -580,7 +582,7 @@ ModelView matrix to start with.
 
 The result should look and behave exactly as before. But now we can build up a hierarchy of objects instead of one single flat list.
 
-![Man made of primitives] (_images/TinManColor.png)
+![Man made of primitives](_images/TinManColor.png)
 
  - Visit the [result as web application]
   (https://cdn.rawgit.com/griestopf/Fusee.Tutorial/d704a6f/Tutorial04Completed/out/Fusee.Tutorial.Web.html) 
@@ -589,7 +591,7 @@ The result should look and behave exactly as before. But now we can build up a h
  - See [Tutorial.cs] (../Tutorial04Completed/Core/Tutorial.cs) in the [Tutorial04 Completed] (../Tutorial04Completed) folder for 
    the overall state so far.
 
-##Exercise
+## Exercise
 
  - Create a hierarchy of objects with at least three levels, e.g. by extending our model to have elbows and wrists / knees and feet. Use color 
    on your objects to make the scene look nice.
