@@ -461,7 +461,7 @@ both bars using the arrow keys.
  - Create a little robot made out of a base, an upper arm and a forearm. Use two cubes to build the base, and one cube each for 
    upper arm and forearm.
    
-   ![Sketch of how the robot assignment should look like] (_images/Robot.png)
+   ![Sketch of how the robot assignment should look like](_images/Robot.png)
    
  - Use the ```Keyboard``` axes to control the yaw of the base and the pitches of upper arm and forearm.
  - Set the arms pivot points to simulate physical joints at the connecting points.
