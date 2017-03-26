@@ -1,10 +1,10 @@
-#Tutorial 05
+# Tutorial 05
 
-##Goals
+## Goals
  - Understand FUSEE's built-in SceneGraph and traversal functionality
  - Implement a more complex shader with specular component
 
-##Shaders are Assets now 
+## Shaders are Assets now 
 Build and run Tutorial 05. The output looks like we left off at [Tutorial 04](../Tutorial04). Under the hood we have one small enhancement:
 Vertex and Pixel Shader are now in seperate source files: `VertexShader.vert` and `PixelShader.frag`. Both files can be found
 under the `Assets` folder in the Core project.
@@ -61,7 +61,7 @@ scene containts some header information about the `.fus` file.
 
 To summarize, you can imagine the contents of a `.fus` file as the example tree in the following image:
 
-![Example Tree] (_images/SceneHierarchy.png)
+![Example Tree](_images/SceneHierarchy.png)
 
 The orange object is the one-and-only `SceneContainer` root instance. The yellow squares are `SceneNodeContainer` objects (*nodes*) 
 and the green rounded squares are different derivations of `SceneComponentContainer` instances (*components*).
